@@ -1,0 +1,590 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<!-- 2018-03-05 seg 13:14 -->
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Emacs Configuration</title>
+<meta name="generator" content="Org mode" />
+<meta name="author" content="gh" />
+<style type="text/css">
+ <!--/*--><![CDATA[/*><!--*/
+  .title  { text-align: center;
+             margin-bottom: .2em; }
+  .subtitle { text-align: center;
+              font-size: medium;
+              font-weight: bold;
+              margin-top:0; }
+  .todo   { font-family: monospace; color: red; }
+  .done   { font-family: monospace; color: green; }
+  .priority { font-family: monospace; color: orange; }
+  .tag    { background-color: #eee; font-family: monospace;
+            padding: 2px; font-size: 80%; font-weight: normal; }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  .org-right  { margin-left: auto; margin-right: 0px;  text-align: right; }
+  .org-left   { margin-left: 0px;  margin-right: auto; text-align: left; }
+  .org-center { margin-left: auto; margin-right: auto; text-align: center; }
+  .underline { text-decoration: underline; }
+  #postamble p, #preamble p { font-size: 90%; margin: .2em; }
+  p.verse { margin-left: 3%; }
+  pre {
+    border: 1px solid #ccc;
+    box-shadow: 3px 3px 3px #eee;
+    padding: 8pt;
+    font-family: monospace;
+    overflow: auto;
+    margin: 1.2em;
+  }
+  pre.src {
+    position: relative;
+    overflow: visible;
+    padding-top: 1.2em;
+  }
+  pre.src:before {
+    display: none;
+    position: absolute;
+    background-color: white;
+    top: -10px;
+    right: 10px;
+    padding: 3px;
+    border: 1px solid black;
+  }
+  pre.src:hover:before { display: inline;}
+  /* Languages per Org manual */
+  pre.src-asymptote:before { content: 'Asymptote'; }
+  pre.src-awk:before { content: 'Awk'; }
+  pre.src-C:before { content: 'C'; }
+  /* pre.src-C++ doesn't work in CSS */
+  pre.src-clojure:before { content: 'Clojure'; }
+  pre.src-css:before { content: 'CSS'; }
+  pre.src-D:before { content: 'D'; }
+  pre.src-ditaa:before { content: 'ditaa'; }
+  pre.src-dot:before { content: 'Graphviz'; }
+  pre.src-calc:before { content: 'Emacs Calc'; }
+  pre.src-emacs-lisp:before { content: 'Emacs Lisp'; }
+  pre.src-fortran:before { content: 'Fortran'; }
+  pre.src-gnuplot:before { content: 'gnuplot'; }
+  pre.src-haskell:before { content: 'Haskell'; }
+  pre.src-hledger:before { content: 'hledger'; }
+  pre.src-java:before { content: 'Java'; }
+  pre.src-js:before { content: 'Javascript'; }
+  pre.src-latex:before { content: 'LaTeX'; }
+  pre.src-ledger:before { content: 'Ledger'; }
+  pre.src-lisp:before { content: 'Lisp'; }
+  pre.src-lilypond:before { content: 'Lilypond'; }
+  pre.src-lua:before { content: 'Lua'; }
+  pre.src-matlab:before { content: 'MATLAB'; }
+  pre.src-mscgen:before { content: 'Mscgen'; }
+  pre.src-ocaml:before { content: 'Objective Caml'; }
+  pre.src-octave:before { content: 'Octave'; }
+  pre.src-org:before { content: 'Org mode'; }
+  pre.src-oz:before { content: 'OZ'; }
+  pre.src-plantuml:before { content: 'Plantuml'; }
+  pre.src-processing:before { content: 'Processing.js'; }
+  pre.src-python:before { content: 'Python'; }
+  pre.src-R:before { content: 'R'; }
+  pre.src-ruby:before { content: 'Ruby'; }
+  pre.src-sass:before { content: 'Sass'; }
+  pre.src-scheme:before { content: 'Scheme'; }
+  pre.src-screen:before { content: 'Gnu Screen'; }
+  pre.src-sed:before { content: 'Sed'; }
+  pre.src-sh:before { content: 'shell'; }
+  pre.src-sql:before { content: 'SQL'; }
+  pre.src-sqlite:before { content: 'SQLite'; }
+  /* additional languages in org.el's org-babel-load-languages alist */
+  pre.src-forth:before { content: 'Forth'; }
+  pre.src-io:before { content: 'IO'; }
+  pre.src-J:before { content: 'J'; }
+  pre.src-makefile:before { content: 'Makefile'; }
+  pre.src-maxima:before { content: 'Maxima'; }
+  pre.src-perl:before { content: 'Perl'; }
+  pre.src-picolisp:before { content: 'Pico Lisp'; }
+  pre.src-scala:before { content: 'Scala'; }
+  pre.src-shell:before { content: 'Shell Script'; }
+  pre.src-ebnf2ps:before { content: 'ebfn2ps'; }
+  /* additional language identifiers per "defun org-babel-execute"
+       in ob-*.el */
+  pre.src-cpp:before  { content: 'C++'; }
+  pre.src-abc:before  { content: 'ABC'; }
+  pre.src-coq:before  { content: 'Coq'; }
+  pre.src-groovy:before  { content: 'Groovy'; }
+  /* additional language identifiers from org-babel-shell-names in
+     ob-shell.el: ob-shell is the only babel language using a lambda to put
+     the execution function name together. */
+  pre.src-bash:before  { content: 'bash'; }
+  pre.src-csh:before  { content: 'csh'; }
+  pre.src-ash:before  { content: 'ash'; }
+  pre.src-dash:before  { content: 'dash'; }
+  pre.src-ksh:before  { content: 'ksh'; }
+  pre.src-mksh:before  { content: 'mksh'; }
+  pre.src-posh:before  { content: 'posh'; }
+  /* Additional Emacs modes also supported by the LaTeX listings package */
+  pre.src-ada:before { content: 'Ada'; }
+  pre.src-asm:before { content: 'Assembler'; }
+  pre.src-caml:before { content: 'Caml'; }
+  pre.src-delphi:before { content: 'Delphi'; }
+  pre.src-html:before { content: 'HTML'; }
+  pre.src-idl:before { content: 'IDL'; }
+  pre.src-mercury:before { content: 'Mercury'; }
+  pre.src-metapost:before { content: 'MetaPost'; }
+  pre.src-modula-2:before { content: 'Modula-2'; }
+  pre.src-pascal:before { content: 'Pascal'; }
+  pre.src-ps:before { content: 'PostScript'; }
+  pre.src-prolog:before { content: 'Prolog'; }
+  pre.src-simula:before { content: 'Simula'; }
+  pre.src-tcl:before { content: 'tcl'; }
+  pre.src-tex:before { content: 'TeX'; }
+  pre.src-plain-tex:before { content: 'Plain TeX'; }
+  pre.src-verilog:before { content: 'Verilog'; }
+  pre.src-vhdl:before { content: 'VHDL'; }
+  pre.src-xml:before { content: 'XML'; }
+  pre.src-nxml:before { content: 'XML'; }
+  /* add a generic configuration mode; LaTeX export needs an additional
+     (add-to-list 'org-latex-listings-langs '(conf " ")) in .emacs */
+  pre.src-conf:before { content: 'Configuration File'; }
+
+  table { border-collapse:collapse; }
+  caption.t-above { caption-side: top; }
+  caption.t-bottom { caption-side: bottom; }
+  td, th { vertical-align:top;  }
+  th.org-right  { text-align: center;  }
+  th.org-left   { text-align: center;   }
+  th.org-center { text-align: center; }
+  td.org-right  { text-align: right;  }
+  td.org-left   { text-align: left;   }
+  td.org-center { text-align: center; }
+  dt { font-weight: bold; }
+  .footpara { display: inline; }
+  .footdef  { margin-bottom: 1em; }
+  .figure { padding: 1em; }
+  .figure p { text-align: center; }
+  .inlinetask {
+    padding: 10px;
+    border: 2px solid gray;
+    margin: 10px;
+    background: #ffffcc;
+  }
+  #org-div-home-and-up
+   { text-align: right; font-size: 70%; white-space: nowrap; }
+  textarea { overflow-x: auto; }
+  .linenr { font-size: smaller }
+  .code-highlighted { background-color: #ffff00; }
+  .org-info-js_info-navigation { border-style: none; }
+  #org-info-js_console-label
+    { font-size: 10px; font-weight: bold; white-space: nowrap; }
+  .org-info-js_search-highlight
+    { background-color: #ffff00; color: #000000; font-weight: bold; }
+  .org-svg { width: 90%; }
+  /*]]>*/-->
+</style>
+<script type="text/javascript">
+/*
+@licstart  The following is the entire license notice for the
+JavaScript code in this tag.
+
+Copyright (C) 2012-2018 Free Software Foundation, Inc.
+
+The JavaScript code in this tag is free software: you can
+redistribute it and/or modify it under the terms of the GNU
+General Public License (GNU GPL) as published by the Free Software
+Foundation, either version 3 of the License, or (at your option)
+any later version.  The code is distributed WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+
+As additional permission under GNU GPL version 3 section 7, you
+may distribute non-source (e.g., minimized or compacted) forms of
+that code without the copy of the GNU GPL normally required by
+section 4, provided you include this license notice and a URL
+through which recipients can access the Corresponding Source.
+
+
+@licend  The above is the entire license notice
+for the JavaScript code in this tag.
+*/
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+</head>
+<body>
+<div id="content">
+<h1 class="title">Emacs Configuration</h1>
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#orgd4ff2ba">1. <code>evil-mode</code></a></li>
+<li><a href="#orgca4228f">2. UI preferences</a>
+<ul>
+<li><a href="#orge00fc8c">2.1. Tweak window chrome</a></li>
+<li><a href="#orgb2a036e">2.2. Custom solarized-dark theme</a></li>
+<li><a href="#org9fcf594">2.3. Disable visual bell</a></li>
+<li><a href="#org7e353dd">2.4. Scroll conservatively</a></li>
+<li><a href="#orga1934d1">2.5. Highlight the current line</a></li>
+<li><a href="#orgb2b1d0c">2.6. Change dictionary</a></li>
+</ul>
+</li>
+<li><a href="#org7a33a48">3. Publishing and task management with Org-mode</a>
+<ul>
+<li><a href="#orgf79d093">3.1. Display preferences</a></li>
+</ul>
+</li>
+<li><a href="#orgc771ff3">4. Editing Settings</a>
+<ul>
+<li><a href="#org79c13d3">4.1. Quickly visit Emacs configuration</a></li>
+<li><a href="#org6e02606">4.2. Always kill current buffer</a></li>
+<li><a href="#org2a8fcda">4.3. Use <code>company-mode</code> everywhere</a></li>
+<li><a href="#org039beb2">4.4. Save place</a></li>
+<li><a href="#orgfab9440">4.5. Configure yasnippet</a></li>
+<li><a href="#org8b52b88">4.6. Cofigure <code>ido</code></a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-orgd4ff2ba" class="outline-2">
+<h2 id="orgd4ff2ba"><span class="section-number-2">1</span> <code>evil-mode</code></h2>
+<div class="outline-text-2" id="text-1">
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(<span style="color: #859900; font-weight: bold;">require</span> '<span style="color: #268bd2; font-weight: bold;">evil</span>)
+(evil-mode t)
+</pre>
+</div>
+
+<p>
+<a href="https://www.emacswiki.org/emacs/Evil">Evil</a>
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgca4228f" class="outline-2">
+<h2 id="orgca4228f"><span class="section-number-2">2</span> UI preferences</h2>
+<div class="outline-text-2" id="text-2">
+</div>
+<div id="outline-container-orge00fc8c" class="outline-3">
+<h3 id="orge00fc8c"><span class="section-number-3">2.1</span> Tweak window chrome</h3>
+<div class="outline-text-3" id="text-2-1">
+<p>
+I don't usually use the menu or scroll bar, and they take up useful space.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(tool-bar-mode 0)
+(menu-bar-mode 0)
+(<span style="color: #859900; font-weight: bold;">when</span> window-system
+  (scroll-bar-mode -1))
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgb2a036e" class="outline-3">
+<h3 id="orgb2a036e"><span class="section-number-3">2.2</span> Custom solarized-dark theme</h3>
+<div class="outline-text-3" id="text-2-2">
+<p>
+I like the solarized-dark theme. I prefer keeping all the characters in the same
+side and font, though.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(<span style="color: #859900; font-weight: bold;">defun</span> <span style="color: #268bd2;">hrs/apply-solarized-theme</span> ()
+  (<span style="color: #859900; font-weight: bold;">setq</span> solarized-use-variable-pitch nil)
+  (<span style="color: #859900; font-weight: bold;">setq</span> solarized-height-plus-1 1.0)
+  (<span style="color: #859900; font-weight: bold;">setq</span> solarized-height-plus-2 1.0)
+  (<span style="color: #859900; font-weight: bold;">setq</span> solarized-height-plus-3 1.0)
+  (<span style="color: #859900; font-weight: bold;">setq</span> solarized-height-plus-4 1.0)
+  (<span style="color: #859900; font-weight: bold;">setq</span> solarized-high-contrast-mode-line t)
+  (load-theme 'solarized-dark t))
+</pre>
+</div>
+
+<p>
+If this code is being evaluated by <code>emacs --daemon</code>, ensure that each subsequent
+frame is themed appropriately.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(<span style="color: #859900; font-weight: bold;">if</span> (daemonp)
+    (add-hook 'after-make-frame-functions
+              (<span style="color: #859900; font-weight: bold;">lambda</span> (frame)
+                  (hrs/apply-solarized-theme)))
+  (hrs/apply-solarized-theme))
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org9fcf594" class="outline-3">
+<h3 id="org9fcf594"><span class="section-number-3">2.3</span> Disable visual bell</h3>
+<div class="outline-text-3" id="text-2-3">
+<p>
+<code>sensible-defaults</code> replaces the audible bell with a visual one, but I really
+don't even want that (and my Emacs/Mac pair renders it poorly). This disables
+the bell altogether.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(<span style="color: #859900; font-weight: bold;">setq</span> ring-bell-function 'ignore)
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org7e353dd" class="outline-3">
+<h3 id="org7e353dd"><span class="section-number-3">2.4</span> Scroll conservatively</h3>
+<div class="outline-text-3" id="text-2-4">
+<p>
+When point goes outside the window, Emacs usually recenters the buffer point.
+I'm not crazy about that. This changes scrolling behavior to only scroll as far
+as point goes.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(<span style="color: #859900; font-weight: bold;">setq</span> scroll-conservatively 100)
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-orga1934d1" class="outline-3">
+<h3 id="orga1934d1"><span class="section-number-3">2.5</span> Highlight the current line</h3>
+<div class="outline-text-3" id="text-2-5">
+<p>
+<code>global-hl-line-mode</code> softly highlights the background color of the line
+containing point. It makes it a bit easier to find point, and it's useful when
+pairing or presenting code.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(<span style="color: #859900; font-weight: bold;">when</span> window-system
+  (global-hl-line-mode))
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-orgb2b1d0c" class="outline-3">
+<h3 id="orgb2b1d0c"><span class="section-number-3">2.6</span> Change dictionary</h3>
+<div class="outline-text-3" id="text-2-6">
+<p>
+Change dictionary to "pt<sub>PT</sub>-preao"
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(global-set-key
+ [f3]
+ (<span style="color: #859900; font-weight: bold;">lambda</span> ()
+   (<span style="color: #859900; font-weight: bold;">interactive</span>)
+   (ispell-change-dictionary <span style="color: #2aa198;">"pt_PT-preao"</span>)))
+</pre>
+</div>
+
+<p>
+Change dictionary to "en"
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(global-set-key
+ [f4]
+ (<span style="color: #859900; font-weight: bold;">lambda</span> ()
+   (<span style="color: #859900; font-weight: bold;">interactive</span>)
+   (ispell-change-dictionary <span style="color: #2aa198;">"en"</span>)))
+</pre>
+</div>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org7a33a48" class="outline-2">
+<h2 id="org7a33a48"><span class="section-number-2">3</span> Publishing and task management with Org-mode</h2>
+<div class="outline-text-2" id="text-3">
+</div>
+<div id="outline-container-orgf79d093" class="outline-3">
+<h3 id="orgf79d093"><span class="section-number-3">3.1</span> Display preferences</h3>
+<div class="outline-text-3" id="text-3-1">
+<p>
+I like to see an outline of pretty bullets instead of a list of asterisks.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(<span style="color: #859900; font-weight: bold;">require</span> '<span style="color: #268bd2; font-weight: bold;">org-bullets</span>)
+(add-hook 'org-mode-hook (<span style="color: #859900; font-weight: bold;">lambda</span> () (org-bullets-mode 1)))
+</pre>
+</div>
+
+<p>
+I like seeing a little downward-pointing arrow instead of the usual ellipsis
+(<code>...</code>) that org displays when there's stuff under a header.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(<span style="color: #859900; font-weight: bold;">setq</span> org-ellipsis <span style="color: #2aa198;">"&#10549;"</span>)
+</pre>
+</div>
+
+<p>
+Fontify code in code blocks
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(<span style="color: #859900; font-weight: bold;">setq</span> org-src-fontify-natively t)
+</pre>
+</div>
+
+<p>
+Make TAB act as if it were issued in a buffer of the language’s major mode.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(<span style="color: #859900; font-weight: bold;">setq</span> org-src-tab-acts-natively t)
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(<span style="color: #859900; font-weight: bold;">setq</span> org-src-window-setup 'current-window)
+</pre>
+</div>
+
+<p>
+Quickly insert a block of elisp: (&lt;el)
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(add-to-list 'org-structure-template-alist
+             '(<span style="color: #2aa198;">"el"</span> <span style="color: #2aa198;">"#+BEGIN_SRC emacs-lisp\n?\n#+END_SRC"</span>))
+</pre>
+</div>
+
+<p>
+Enable spell-checking in Org-mode. The quick brown fox jumps over the lazy dog.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(add-hook 'org-mode-hook 'flyspell-mode)
+</pre>
+</div>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgc771ff3" class="outline-2">
+<h2 id="orgc771ff3"><span class="section-number-2">4</span> Editing Settings</h2>
+<div class="outline-text-2" id="text-4">
+</div>
+<div id="outline-container-org79c13d3" class="outline-3">
+<h3 id="org79c13d3"><span class="section-number-3">4.1</span> Quickly visit Emacs configuration</h3>
+<div class="outline-text-3" id="text-4-1">
+<p>
+I futz around with my dotfiles a lot. This binds <code>C-c e</code> to quickly open my
+Emacs configuration file.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(<span style="color: #859900; font-weight: bold;">defun</span> <span style="color: #268bd2;">gh/visit-emacs-config</span> ()
+  (<span style="color: #859900; font-weight: bold;">interactive</span>)
+  (find-file <span style="color: #2aa198;">"~/.emacs.d/configuration.org"</span>))
+
+(global-set-key (kbd <span style="color: #2aa198;">"C-c e"</span>) 'gh/visit-emacs-config)
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org6e02606" class="outline-3">
+<h3 id="org6e02606"><span class="section-number-3">4.2</span> Always kill current buffer</h3>
+<div class="outline-text-3" id="text-4-2">
+<p>
+Assume that I always want to kill the current buffer when hitting <code>C-x k</code>.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(global-set-key (kbd <span style="color: #2aa198;">"C-x k"</span>) 'gh/kill-current-buffer)
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org2a8fcda" class="outline-3">
+<h3 id="org2a8fcda"><span class="section-number-3">4.3</span> Use <code>company-mode</code> everywhere</h3>
+<div class="outline-text-3" id="text-4-3">
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(add-hook 'after-init-hook 'global-company-mode)
+</pre>
+</div>
+
+<p>
+<a href="http://company-mode.github.io/">company-mode</a>
+</p>
+</div>
+</div>
+
+<div id="outline-container-org039beb2" class="outline-3">
+<h3 id="org039beb2"><span class="section-number-3">4.4</span> Save place</h3>
+<div class="outline-text-3" id="text-4-4">
+<p>
+Purpose: When you visit a file, point goes to the last place where it was when you previously visited the same file.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(save-place-mode 1)
+</pre>
+</div>
+
+<p>
+<a href="https://www.emacswiki.org/emacs/SavePlace">Save Place</a>
+</p>
+</div>
+</div>
+<div id="outline-container-orgfab9440" class="outline-3">
+<h3 id="orgfab9440"><span class="section-number-3">4.5</span> Configure yasnippet</h3>
+</div>
+<div id="outline-container-org8b52b88" class="outline-3">
+<h3 id="org8b52b88"><span class="section-number-3">4.6</span> Cofigure <code>ido</code></h3>
+<div class="outline-text-3" id="text-4-6">
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(<span style="color: #859900; font-weight: bold;">setq</span> ido-enable-flex-matching t)
+(<span style="color: #859900; font-weight: bold;">setq</span> ido-everywhere t)
+(ido-mode 1)
+(flx-ido-mode 1) <span style="color: #586e75;">; </span><span style="color: #586e75;">better/faster matching</span>
+(<span style="color: #859900; font-weight: bold;">setq</span> ido-create-new-buffer 'always) <span style="color: #586e75;">; </span><span style="color: #586e75;">don't confirm to create new buffers</span>
+(ido-vertical-mode 1)
+(<span style="color: #859900; font-weight: bold;">setq</span> ido-vertical-define-keys 'C-n-and-C-p-only)
+</pre>
+</div>
+
+<p>
+<a href="https://www.emacswiki.org/emacs/InteractivelyDoThings">ido</a>
+<a href="https://github.com/lewang/flx">flx-ido</a>
+<a href="https://github.com/creichert/ido-vertical-mode.el">ido-vertical-mode</a>
+</p>
+</div>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="author">Author: gh</p>
+<p class="date">Created: 2018-03-05 seg 13:14</p>
+<p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
+</div>
+</body>
+</html>

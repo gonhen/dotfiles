@@ -1,0 +1,35 @@
+;;; -*- coding: utf-8 -*-
+
+;; ----- ido-last-directory-list -----
+(
+ ("/home/" . "gh/")
+ ("/" . "home/")
+ ("/home/gh/Downloads/" . "Three.Billboards.Outside.Ebbing.Missouri.2017.720p.WEB-DL.DD5.1.H264-FGT/")
+ ("/home/gh/" . "Documents/")
+)
+
+;; ----- ido-work-directory-list -----
+(
+ "/home/gh/Documents/"
+)
+
+;; ----- ido-work-file-list -----
+(
+ "teste.org"
+)
+
+;; ----- ido-dir-file-cache -----
+(
+ ("/home/gh/Documents/" (23180 42235 145320 645000) "PSI/" "./" "MATLAB/" "Cover_letter/" "#test.org#" "Header/" "Calendar/" "../" "Master/" "Latex/")
+
+ ("/home/" (23073 37053 835658 393000) "acestream/" "./" "gh/" "../")
+
+ ("/home/gh/Downloads/Three.Billboards.Outside.Ebbing.Missouri.2017.720p.WEB-DL.DD5.1.H264-FGT/" (23172 28084 661770 186000) "Three.Billboards.Outside.Ebbing.Missouri.2017.720p.WEB-DL.DD5.1.H264-FGT.mkv" "./" "RARBG.txt" "../")
+
+ ("/home/gh/Downloads/" (23188 6836 615517 603000) "Three.Billboards.Outside.Ebbing.Missouri.2017.720p.WEB-DL.DD5.1.H264-FGT/" "[ZZSeries] Angela White, Karma Rx - Xander s World Tour - Ep.2 (24.02.2018) rq.mp4" "BlackAmbush.18.02.03.Renee.XXX.720p.MP4-KTR[rarbg]/" "BackroomCastingCouch.18.02.26.Alexis.XXX.720p.MP4-KTR[rarbg]/" "BackroomCastingCouch.18.02.12.Autumn.XXX.720p.MP4-KTR[rarbg]/" "Homeland.S07E01.720p.WEB.H264-DEFLATE[rarbg]/" "Fick.Party.Fuck.And.Dance.Vol.160.DaCada.Du.Geiles.Stueck.GERMAN.XXX.DVDRiP.x264-TattooLovers/" "bb16323-480p.mp4" "JuanDi_vx4787-HD.mp4" "BackroomCastingCouch.18.02.05.Ashlee.XXX.720p.MP4-KTR[rarbg]/" "CumloudersDrivingSchool.18.02.26.Valentina.Nappi.XXX.1080p.MP4-KTR[rarbg]/" "JuanDi_vx4738-HD.mp4" "[Babes] Jade Kush - The Best Part Of Waking Up (03.03.2018) rq.mp4" "zzs_madison_ivy_vl122117_480p_1500.mp4" "BackroomCastingCouch.18.02.19.Raven.XXX.720p.MP4-KTR[rarbg]/" "JuanDi_vx4775-HD.mp4" "Homeland.S07E03.720p.WEB.H264-DEFLATE[rarbg]/" "[PornstarsLikeItBig] Ariana Marie - The Perfect Applicant Part 2 (12.02.2018) rq.mp4" "JuanDi_vx4561.mp4" "Song.To.Song.2017.720p.BluRay.H264.AAC-RARBG/" "[BangBus] Alexis Andrews - Big Booty Stripper Takes The Ride (21.02.2018) rq.mp4" "Hot Gold - Caseiradas Portuguesas VII - Tania (Cena 02).mp4" "Billions.S01.Season.1.720p.WebRip.ReEnc-DeeJayAhmed/" "BackroomCastingCouch.18.01.29.Chelsea.XXX.720p.MP4-KTR[rarbg]/" "JuanDi_vx4565.mp4" "Ana Marco Brenda Boop Follando con todas 2.flv" "Rafaela em Despedida de Solteiro.mkv" "BlackAmbush.18.02.17.Chanel.XXX.720p.MP4-KTR[rarbg]/" "[CBM] Hellsing Ultimate 1-10 Complete (Dual Audio) [BDRip-1080p-8bit-AC3]/" "aspell6-pt_PT-20070510-0/" "JuanDi_vx4774.mp4" "Linda Martini (2018) FLAC/" "povlife.18.02.20.victoria.june[tk][480p].mp4" "Tout.Va.Bien.1972.1080p.BluRay.x264-GHOULS[rarbg]/" "ExploitedCollegeGirls.18.02.22.Paisley.XXX.720p.MP4-KTR[rarbg]/" "Linda Martini (2018) FLAC.zip" "biluhihjop98.mp4" "Hot Gold - Caseiradas Portuguesas VII - Tania (Cena 03).mp4" "Hot Gold - Caseiradas Portuguesas VII - Tania (Cena 01).mp4" "BILLIONS - Complete Season 2 S02 (2017) - 720p AMZN WebRip x264/" "plib_ariana_marie_bb102717_480p_1500.mp4" "Hot Gold - Caseiradas Portuguesas VII - Tania (Cena 04).mp4" "Contempt.1963.1080p.BluRay.H264.AAC-RARBG/" "JuanDi_vx4767-HD.mp4" "BlackAmbush.17.08.28.Aleksa.XXX.720p.MP4-KTR[rarbg]/" "ExploitedCollegeGirls.18.02.08.Elena.XXX.720p.MP4-KTR[rarbg]/" "teste.m" "aspell6-pt_PT-20070510-0.tar.bz2" "mgb_joslyn_james_kl011718_480p_1500.mp4" "[BabyGotBoobs] Ashly Anderson - Post-Workout Smoothie (23.02.2018) rq.mp4" "JuanDi_vx4593-HD.mp4" "JuanDi_vx4572-HD.mp4" "Rose Monroe.mp4" "../" "./")
+
+ ("/home/gh/" (23188 21660 105184 487000) ".bashrc" "vimwiki/" ".bash_profile" ".ACEStream/" ".rstudio-desktop/" ".Xresources" ".viminfo.tmp" "configure.scan" "package-lock.json" "jogl.ex.26288" ".pki/" "Dropbox/" "rmarkdown.rmd" ".Xclients" ".ICEauthority" ".config/" "polybar/" "Downloads/" ".calcurse/" "./" ".felix/" ".vimrc" "teste.pdf" "#text.org#" "java.log.19132" ".Rhistory" "Pictures/" ".xsession" "node_modules/" ".xinitrc" ".local/" ".vim/" ".bash_history-02461.tmp" ".dropbox/" ".dir_colors" ".profile" ".python_history" "Readme" "Desktop/" ".emacs~" "Templates/" ".xprofile" ".bash_history-08225.tmp" "rmarkdown.html" "polybar-crypto/" "#test.emacs#" ".hunter/" "teste.rmd" ".cgminer/" "Documents/" "rmarkdown.pdf" "teste.html" ".wget-hsts" "R/" ".face" ".bash_history-02470.tmp" ".extend.bashrc" ".java/" "audiofile.wav" ".bash_history" ".cache/" ".mozilla/" ".task/" "matlab_crash_dump.24966-1" ".gnupg/" ".esd_auth" ".hplip/" ".viminfo" "Music/" ".octave_hist" ".matlab/" "Public/" "#test.org#" ".pySopCast/" ".subversion/" ".fehbg" ".kodi/" "wolf-xmr-miner/" ".emacs" ".dropbox-dist/" ".smpd" "java.log.15039" "jogl.ex.21462" ".gnome/" ".adobe/" "#teste.org#" ".ssh/" "Videos/" ".npm/" ".swp" "dropbox/" "autoscan.log" ".dir_colors.old" ".v8flags.6.2.414.44-node.11.gh.json" ".emacs.d/" ".bash_logout" "snap/" ".macromedia/" "../" "tmp/")
+)
+
+;; ----- ido-unc-hosts-cache -----
+t
