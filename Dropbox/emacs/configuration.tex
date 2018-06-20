@@ -1,0 +1,1238 @@
+% Created 2018-05-28 Mon 00:10
+% Intended LaTeX compiler: pdflatex
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage{grffile}
+\usepackage{longtable}
+\usepackage{wrapfig}
+\usepackage{rotating}
+\usepackage[normalem]{ulem}
+\usepackage{amsmath}
+\usepackage{textcomp}
+\usepackage{amssymb}
+\usepackage{capt-of}
+\usepackage{hyperref}
+\author{Goncalo M. V. Henriques}
+\date{\today}
+\title{Emacs Configuration}
+\hypersetup{
+ pdfauthor={Goncalo M. V. Henriques},
+ pdftitle={Emacs Configuration},
+ pdfkeywords={},
+ pdfsubject={},
+ pdfcreator={Emacs 25.3.1 (Org mode 9.1.9)},
+ pdflang={English}}
+\begin{document}
+
+\maketitle
+\tableofcontents
+
+
+\section{Personal info}
+\label{sec:orgb134231}
+
+\begin{verbatim}
+(setq user-full-name "Goncalo M. V. Henriques"
+user-mail-address "gmv.henriques@gmail.com")
+\end{verbatim}
+
+\section{Use \texttt{sensible-defaults.el}}
+\label{sec:orga49d08b}
+
+Use \href{https://github.com/hrs/sensible-defaults.el}{sensible-defaults.el} for some basic settings.
+
+\begin{verbatim}
+(load-file "~/.emacs.d/sensible-defaults.el")
+(sensible-defaults/use-all-settings)
+(sensible-defaults/use-all-keybindings)
+(sensible-defaults/backup-to-temp-directory)
+\end{verbatim}
+
+\section{Load-path}
+\label{sec:org413b11b}
+
+\begin{verbatim}
+(add-to-list 'load-path "~/Dropbox/emacs/lisp")
+\end{verbatim}
+
+\section{Configure \texttt{use-package}}
+\label{sec:orged5eef5}
+
+Gradually moving to \href{https://github.com/jwiegley/use-package}{use-package}.
+
+\begin{verbatim}
+(unless (package-installed-p 'use-package)
+        (package-refresh-contents)
+        (package-install 'use-package))
+
+(require 'use-package)
+\end{verbatim}
+
+Always compile packages, and use the newest version available (\href{https://github.com/emacscollective/auto-compile}{auto-compile}).
+
+\begin{verbatim}
+(use-package auto-compile
+  :ensure t
+  :config (auto-compile-on-load-mode))
+(setq load-prefer-newer t)
+\end{verbatim}
+
+\section{Configure \texttt{evil-mode}}
+\label{sec:orga9c4b2b}
+
+\href{https://github.com/emacs-evil/evil}{Evil} its a vim emulator.
+
+\begin{verbatim}
+(use-package evil
+  :ensure t
+  :init
+  (evil-mode 1))
+\end{verbatim}
+
+Enable \href{https://github.com/emacs-evil/evil-surround}{surround} everywhere.
+
+\begin{verbatim}
+(use-package evil-surround
+  :ensure t
+  :config
+  (global-evil-surround-mode 1))
+\end{verbatim}
+
+Bind \texttt{C-p} to fuzzy-finding files in the current project.
+
+\begin{verbatim}
+(define-key evil-normal-state-map (kbd "C-p") 'projectile-find-file)
+\end{verbatim}
+
+\section{UI preferences}
+\label{sec:org3420e89}
+\subsection{Tweak window chrome}
+\label{sec:org3fae141}
+
+I don't usually use the menu or scroll bar, and they take up useful space.
+
+\begin{verbatim}
+(tool-bar-mode 0)
+(menu-bar-mode 0)
+(when window-system
+  (scroll-bar-mode -1))
+\end{verbatim}
+
+\subsection{Function to toggle between themes}
+\label{sec:orgccc69ed}
+
+I like the solarized-dark theme. I prefer keeping all the characters in the same
+side and font, though.
+
+\begin{verbatim}
+(defun gh/apply-solarized-theme ()
+    (setq solarized-use-variable-pitch nil)
+    (setq solarized-height-plus-1 1.0)
+    (setq solarized-height-plus-2 1.0)
+    (setq solarized-height-plus-3 1.0)
+    (setq solarized-height-plus-4 1.0)
+    (setq solarized-high-contrast-mode-line t)
+    (load-theme 'solarized-dark t))
+\end{verbatim}
+
+Define the light color theme.
+
+\begin{verbatim}
+(defcustom default-light-color-theme 'solarized-light
+"default light theme")
+\end{verbatim}
+
+Define the dark color theme.
+
+\begin{verbatim}
+(defcustom default-dark-color-theme 'solarized-dark
+"default dark theme")
+\end{verbatim}
+
+With this function I can toggle between the dark and the light theme.
+To solve a problem with org-bullets, ensure that when changing theme org-mode restarts.
+
+\begin{verbatim}
+(defun gh/toggle-dark-light-theme ()
+(interactive)
+
+(let ((is-light (find default-light-color-theme custom-enabled-themes)))
+  (dolist (theme custom-enabled-themes)
+    (disable-theme theme))
+  (load-theme (if is-light default-dark-color-theme default-light-color-theme))
+  (if (org-mode) (org-mode-restart))))
+\end{verbatim}
+
+I set the key \texttt{<f12>} to toggle between themes.
+
+\begin{verbatim}
+(global-set-key (kbd "<f12>") 'gh/toggle-dark-light-theme)
+\end{verbatim}
+
+If this code is being evaluated by emacs --daemon, ensure that each subsequent frame is themed appropriately.
+
+\begin{verbatim}
+(if (daemonp)
+  (add-hook 'after-make-frame-functions
+            (lambda (frame)
+                (gh/apply-solarized-theme)))
+(gh/apply-solarized-theme))
+\end{verbatim}
+\subsection{Disable visual bell}
+\label{sec:org43ed115}
+
+\texttt{sensible-defaults} replaces the audible bell with a visual one, but I really
+don't even want that (and my Emacs/Mac pair renders it poorly). This disables
+the bell altogether.
+
+\begin{verbatim}
+(setq ring-bell-function 'ignore)
+\end{verbatim}
+
+\subsection{Scroll conservatively}
+\label{sec:orgb46e03c}
+
+When point goes outside the window, Emacs usually recenters the buffer point.
+I'm not crazy about that. This changes scrolling behavior to only scroll as far
+as point goes.
+
+\begin{verbatim}
+(setq scroll-conservatively 100)
+\end{verbatim}
+\subsection{Highlight the current line}
+\label{sec:org32f599b}
+
+\texttt{global-hl-line-mode} softly highlights the background color of the line
+containing point. It makes it a bit easier to find point, and it's useful when
+pairing or presenting code.
+
+\begin{verbatim}
+(when window-system
+  (global-hl-line-mode))
+\end{verbatim}
+\subsection{Display the current column number}
+\label{sec:org2e7a0f1}
+
+Display the current column.
+
+\begin{verbatim}
+(setq column-number-mode t)
+\end{verbatim}
+
+\section{Publishing and task management with Org-mode}
+\label{sec:org5ff7c99}
+\subsection{Display preferences}
+\label{sec:orga14046d}
+
+I like to see an outline of pretty bullets instead of a list of asterisks.
+
+\begin{verbatim}
+(use-package org-bullets
+  :ensure t
+  :init
+  (add-hook 'org-mode-hook #'org-bullets-mode))
+\end{verbatim}
+
+I like seeing a little downward-pointing arrow instead of the usual ellipsis
+(\texttt{...}) that org displays when there's stuff under a header.
+
+\begin{verbatim}
+(setq org-ellipsis "⤵")
+\end{verbatim}
+
+Fontify code in code blocks
+
+\begin{verbatim}
+(setq org-src-fontify-natively t)
+\end{verbatim}
+
+Make TAB act as if it were issued in a buffer of the language’s major mode.
+
+\begin{verbatim}
+(setq org-src-tab-acts-natively t)
+\end{verbatim}
+
+\begin{verbatim}
+(setq org-src-window-setup 'current-window)
+\end{verbatim}
+
+Quickly insert a block of elisp: (<el)
+
+\begin{verbatim}
+(add-to-list 'org-structure-template-alist
+             '("el" "#+BEGIN_SRC emacs-lisp\n?\n#+END_SRC"))
+\end{verbatim}
+
+Enable spell-checking in Org-mode. The quick brown fox jumps over the lazy dog.
+
+\begin{verbatim}
+(add-hook 'org-mode-hook 'flyspell-mode)
+\end{verbatim}
+
+\begin{verbatim}
+(setq org-hierarchical-todo-statistics nil)
+\end{verbatim}
+\subsection{Org-mode}
+\label{sec:org8137152}
+
+Store my org files in \texttt{\textasciitilde{}/Dropbox/org/}, define the location of the index file, and archive finished tasks in \texttt{\textasciitilde{}/Dropbox/org/archive.org}.
+
+\begin{verbatim}
+(setq org-directory "~/Dropbox/org")
+(defun org-file-path (filename)
+        "Return the absolute address of an org file, given its relative name."
+        (concat (file-name-as-directory org-directory) filename))
+
+(setq org-index-file (org-file-path "index.org"))
+(setq org-archive-location
+        (concat (org-file-path "archive.org") "::* From %s"))
+\end{verbatim}
+
+Derive my agenda from this directory:
+
+\begin{verbatim}
+(setq org-agenda-files '("~/Dropbox/org"))
+\end{verbatim}
+
+Hitting \texttt{C-c C-x C-s} will mark a todo as done and move it to an appropriate place in the archive.
+
+\begin{verbatim}
+(defun gh/mark-done-and-archive ()
+  "Mark the state of an org-mode item as DONE and archive it."
+  (interactive)
+  (org-todo 'done)
+  (org-archive-subtree))
+
+(define-key org-mode-map (kbd "C-c C-x C-s") 'gh/mark-done-and-archive)
+\end{verbatim}
+
+Record the time that a todo was archived.
+
+\begin{verbatim}
+(setq org-log-done 'time)
+\end{verbatim}
+
+
+\subsubsection{Capturing tasks}
+\label{sec:org7edb6c5}
+
+Define a few common tasks as capture templates. Specifically, I frequently:
+
+\begin{itemize}
+\item Record ideas for future blog posts in \texttt{\textasciitilde{}/Dropbox/org/blog-ideas.org},
+\item Maintain a todo list in \texttt{\textasciitilde{}/org/index.org}.
+\item Convert emails into todos to maintain an empty inbox.
+\end{itemize}
+
+\begin{verbatim}
+(setq org-capture-templates
+      '(("a" "Appointment"
+         entry
+         (file  "~/Dropbox/org/calendar.org" )
+         "* %?\n\n%^T\n\n:PROPERTIES:\n\n:END:\n\n")
+
+        ("b" "Blog idea"
+         entry
+         (file (org-file-path "blog-ideas.org"))
+         "* %?\n")
+
+        ("e" "Email" entry
+         (file+headline org-index-file "Inbox")
+         "* TODO %?\n\n%a\n\n")
+
+        ("f" "Finished book"
+         table-line (file "~/documents/notes/books-read.org")
+         "| %^{Title} | %^{Author} | %u |")
+
+        ("r" "Reading"
+         checkitem
+         (file (org-file-path "to-read.org")))
+
+        ("s" "Subscribe to an RSS feed"
+         plain
+         (file "~/documents/rss/urls")
+         "%^{Feed URL} \"~%^{Feed name}\"")
+
+        ("t" "Todo"
+         entry
+         (file+headline org-index-file "Inbox")
+         "* TODO %?\n")))
+\end{verbatim}
+
+When I'm starting an Org capture template I'd like to begin in insert mode. I'm
+opening it up in order to start typing something, so this skips a step.
+
+\begin{verbatim}
+(add-hook 'org-capture-mode-hook 'evil-insert-state)
+\end{verbatim}
+
+When refiling an item, I'd like to use ido for completion.
+
+\begin{verbatim}
+(setq org-refile-use-outline-path t)
+(setq org-outline-path-complete-in-steps nil)
+\end{verbatim}
+\subsubsection{Keybindings}
+\label{sec:orgbaefc77}
+
+Bind a few handy keys.
+
+\begin{verbatim}
+(define-key global-map "\C-cl" 'org-store-link)
+(define-key global-map "\C-ca" 'org-agenda)
+(define-key global-map "\C-cc" 'org-capture)
+\end{verbatim}
+
+Hit \texttt{C-c i} to quickly open up my index file.
+
+\begin{verbatim}
+(defun gh/open-index-file ()
+  "Open the master org TODO list."
+  (interactive)
+  (find-file org-index-file)
+  (flycheck-mode -1)
+  (end-of-buffer))
+
+(global-set-key (kbd "C-c i") 'gh/open-index-file)
+\end{verbatim}
+
+\subsection{Sync Org-mode with Google Calendar}
+\label{sec:orga81a25d}
+
+I use \href{https://github.com/myuhe/org-gcal.el}{org-gcal} to sync my Google calendar.
+
+\begin{verbatim}
+(setq package-check-signature nil)
+
+
+(use-package org-gcal
+  :ensure t
+  :config
+(setq org-gcal-client-id "107011808994-g9s382a66p4d3f78ibkccl15sjgh7a9n.apps.googleusercontent.com"
+          org-gcal-client-secret "Gjfci0moPki0d_APpcqEL3WF"
+          org-gcal-file-alist '(("gmv.henriques@gmail.com" .  "~/Dropbox/org/calendar.org"))))
+
+\end{verbatim}
+
+I use these two hooks to sync things semi-automatically.
+The first hook syncs whenever I load the agenda. Since this happens in the background, if I just added something to my calendar, I might have to reload the agenda by hitting r in the agenda view.
+The second hook syncs with my Google calendar when I capture.
+
+\begin{verbatim}
+(add-hook 'org-agenda-mode-hook (lambda () (org-gcal-sync) ))
+(add-hook 'org-capture-after-finalize-hook (lambda () (org-gcal-sync) ))
+\end{verbatim}
+
+\href{https://github.com/kiwanami/emacs-calfw}{Calfw} it's a nice tool to view calendars in Google.
+
+\begin{verbatim}
+  (use-package calfw
+    :ensure t
+    :config
+    (use-package calfw-ical
+    :ensure t
+    :config
+    (use-package calfw-org
+    :ensure t
+    :config
+    (setq cfw:display-calendar-holidays nil)
+    (defun mycalendar ()
+      (interactive)
+      (cfw:open-calendar-buffer
+       :contents-sources
+       (list
+        (cfw:org-create-source "Green")
+;	(cfw:ical-create-source "Gcal" "https://calendar.google.com/calendar/ical/gmv.henriques%40gmail.com/private-549e154258dff1844e9f91f62688c84b/basic.ics" "White")
+        (cfw:ical-create-source "Feriados" "https://calendar.google.com/calendar/ical/pt-pt.portuguese%23holiday%40group.v.calendar.google.com/public/basic.ics" "Red")
+        )))
+  )
+  )
+  )
+\end{verbatim}
+\section{Editing Settings}
+\label{sec:org0750d42}
+\subsection{Quickly visit Emacs configuration}
+\label{sec:org3f0cd8f}
+
+I futz around with my dotfiles a lot. This binds \texttt{C-c e} to quickly open my
+Emacs configuration file.
+
+\begin{verbatim}
+(defun gh/visit-emacs-config ()
+  (interactive)
+  (find-file "~/Dropbox/emacs/configuration.org"))
+
+(global-set-key (kbd "C-c e") 'gh/visit-emacs-config)
+\end{verbatim}
+
+\subsection{Always kill current buffer}
+\label{sec:org48a5974}
+
+Assume that I always want to kill the current buffer when hitting \texttt{C-x k}.
+
+\begin{verbatim}
+(global-set-key (kbd "C-x k") 'gh/kill-current-buffer)
+\end{verbatim}
+
+\subsection{Use \texttt{company-mode} everywhere}
+\label{sec:org3909f6b}
+
+\begin{verbatim}
+(use-package company
+:ensure t
+:init
+(add-hook 'after-init-hook 'global-company-mode)
+)
+\end{verbatim}
+
+\subsection{\texttt{Saveplace}}
+\label{sec:orgbdb454b}
+
+Purpose: When you visit a file, point goes to the last place where it was when you previously visited the same file.
+
+\begin{verbatim}
+(use-package saveplace
+ :ensure t
+ :init
+ (save-place-mode 1)
+)
+\end{verbatim}
+
+\href{https://www.emacswiki.org/emacs/SavePlace}{Save Place}
+\subsection{Always indent with spaces}
+\label{sec:orgfe533d7}
+
+Never use tabs. Tabs are the devil’s whitespace.
+
+\begin{verbatim}
+(setq-default indent-tabs-mode nil)
+\end{verbatim}
+
+\subsection{Configure \texttt{yasnippet}}
+\label{sec:org7c4554b}
+
+I keep my snippets in \texttt{\textasciitilde{}/Dropbox/emacs/snippets/text-mode}, and I always want \texttt{yasnippet} enabled.
+
+\begin{verbatim}
+(use-package yasnippet
+:ensure t
+:init
+  (setq yas-snippet-dirs '("~/Dropbox/emacs/snippets/text-mode"))
+  (yas-global-mode 1))
+\end{verbatim}
+
+I don’t want \texttt{ido} to automatically indent the snippets it inserts. Sometimes this looks pretty bad (when indenting org-mode, for example, or trying to guess at the correct indentation for Python).
+
+\begin{verbatim}
+(setq yas/indent-line nil)
+\end{verbatim}
+\subsection{Configure \texttt{ido}}
+\label{sec:org7b3134b}
+
+\begin{verbatim}
+(use-package ido
+  :ensure t
+  :init
+  (setq ido-enable-flex-matching t)
+  (setq ido-everywhere t)
+  (ido-mode 1)
+
+  (use-package flx-ido
+    :ensure t
+    :init
+    (flx-ido-mode 1) ; better/faster matching
+  )
+
+(setq ido-create-new-buffer 'always) ; don't confirm to create new buffers
+
+  (use-package ido-vertical-mode
+    :ensure t
+    :init
+    (ido-vertical-mode 1)
+    (setq ido-vertical-define-keys 'C-n-and-C-p-only)
+  )
+)
+\end{verbatim}
+
+\href{https://www.emacswiki.org/emacs/InteractivelyDoThings}{ido}
+\href{https://github.com/lewang/flx}{flx-ido}
+\href{https://github.com/creichert/ido-vertical-mode.el}{ido-vertical-mode}
+\subsection{Electric pair}
+\label{sec:orga7c8fd1}
+
+Typing any left bracket automatically insert the right matching bracket.
+
+\begin{verbatim}
+(electric-pair-mode 1)
+\end{verbatim}
+\subsection{Rainbow-delimiters}
+\label{sec:org7203746}
+
+\begin{verbatim}
+(use-package rainbow-delimiters
+  :ensure t
+  :commands rainbow-delimiters-mode
+  :init
+  (add-hook 'prog-mode-hook #'rainbow-delimiters-mode)
+  (add-hook 'LaTex-mode-hook #'rainbow-delimiters-mode)
+  (add-hook 'org-mode-hook 'rainbow-delimiters-mode))
+\end{verbatim}
+
+\subsection{Use \texttt{smex} to handle \texttt{M-x} with \texttt{ido}}
+\label{sec:orgd4113d4}
+
+\begin{verbatim}
+(use-package smex
+  :ensure t
+  :init
+  (smex-initialize)
+)
+
+(global-set-key (kbd "M-x") 'smex)
+(global-set-key (kbd "M-X") 'smex-major-mode-commands)
+\end{verbatim}
+
+\subsection{Switch and rebalance windows when splitting}
+\label{sec:org4e00172}
+
+When splitting a window, I invariably want to switch to the new window. This makes that automatic.
+
+\begin{verbatim}
+ (defun gh/split-window-below-and-switch ()
+  "Split the window horizontally, then switch to the new pane."
+  (interactive)
+  (split-window-below)
+  (balance-windows)
+  (other-window 1))
+
+(defun gh/split-window-right-and-switch ()
+  "Split the window vertically, then switch to the new pane."
+  (interactive)
+  (split-window-right)
+  (balance-windows)
+  (other-window 1))
+
+(global-set-key (kbd "C-x 2") 'gh/split-window-below-and-switch)
+(global-set-key (kbd "C-x 3") 'gh/split-window-right-and-switch)
+\end{verbatim}
+\section{Writing}
+\label{sec:org2fc4c0f}
+\subsection{Change dictionary}
+\label{sec:orga322c04}
+
+Change dictionary to \texttt{PT-preao}
+
+\begin{verbatim}
+(global-set-key
+[f3]
+(lambda ()
+    (interactive)
+    (ispell-change-dictionary "pt_PT-preao")))
+\end{verbatim}
+
+Change dictionary to \texttt{En}
+
+\begin{verbatim}
+(global-set-key
+[f4]
+(lambda ()
+    (interactive)
+    (ispell-change-dictionary "en")))
+\end{verbatim}
+\subsection{Wrap paragraphs automatically}
+\label{sec:org62968ca}
+
+\texttt{AutoFillMode} automatically wraps paragraphs.
+
+\begin{verbatim}
+(add-hook 'text-mode-hook 'turn-on-auto-fill)
+(add-hook 'gfm-mode-hook 'turn-on-auto-fill)
+(add-hook 'org-mode-hook 'turn-on-auto-fill)
+\end{verbatim}
+
+Sometimes, though, I don’t wanna wrap text. This toggles wrapping with \texttt{C-c q}:
+
+\begin{verbatim}
+(global-set-key (kbd "C-c q") 'auto-fill-mode)
+\end{verbatim}
+\subsection{\texttt{Flyspell-popup}}
+\label{sec:orga1a59e5}
+
+Call flyspell-popup-correct to correct misspelled word at point with a Popup
+Menu. You might want to bind it to a short key, for example:
+
+\begin{verbatim}
+(use-package flyspell-popup
+:ensure t
+:init
+(define-key flyspell-mode-map (kbd "C-;") #'flyspell-popup-correct))
+\end{verbatim}
+\subsection{Darkroom}
+\label{sec:org742df63}
+
+\begin{verbatim}
+(use-package darkroom
+   :ensure t)
+\end{verbatim}
+
+\section{Email with \texttt{mu4e}}
+\label{sec:orgb5eb1ee}
+\subsection{Evil}
+\label{sec:orgb06f316}
+Use the evil bindings for navigation. They’re very similar to the mutt bindings,
+which matches my muscle memory nicely. =)
+
+\begin{verbatim}
+(require 'evil-mu4e)
+\end{verbatim}
+\subsection{Where’s my mail? Who am I?}
+\label{sec:org31cec0f}
+I keep my mail in \texttt{\textasciitilde{}/.mail}. The default mail directory would be \texttt{\textasciitilde{}/Maildir}, but I’d rather hide it; I don’t poke around in there manually very often.
+
+This setting matches the paths in my mbsync configuration.
+
+\begin{verbatim}
+(setq mu4e-maildir "~/.mail")
+\end{verbatim}
+
+I only have one context at the moment. If I had another email account, though,
+I’d define it in here with an additional \texttt{make-mu4e-context} block.
+
+My full name is defined earlier in this configuration file.
+
+\begin{verbatim}
+(setq mu4e-contexts
+      `(,(make-mu4e-context
+          :name "gmail"
+          :match-func (lambda (msg)
+                        (when msg
+                          (string-prefix-p "/gmail" (mu4e-message-field msg :maildir))))
+          :vars '((user-mail-address . "gmv.henriques@gmail.com")
+                  (mu4e-trash-folder . "/gmail/archive")
+                  (mu4e-refile-folder . "/gmail/archive")
+                  (mu4e-sent-folder . "/gmail/sent")
+                  (mu4e-drafts-folder . "/gmail/drafts")))))
+\end{verbatim}
+\subsection{Fetching new mail}
+\label{sec:orgc1afe38}
+
+I fetch my email with \texttt{mbsync}. I’ve also bound “o” to fetch new mail.
+
+\begin{verbatim}
+(setq mu4e-get-mail-command "killall --quiet mbsync; mbsync inboxes")
+
+(define-key mu4e-headers-mode-map (kbd "o") 'mu4e-update-mail-and-index)
+\end{verbatim}
+
+Rename files when moving them between directories. \texttt{mbsync} supposedly prefers
+this; I’m cargo-culting.
+
+\begin{verbatim}
+(setq mu4e-change-filenames-when-moving t)
+\end{verbatim}
+
+Poll the server for new mail every 1 minute.
+
+\begin{verbatim}
+(setq mu4e-update-interval 60)
+\end{verbatim}
+\subsection{Viewing mail}
+\label{sec:orge4f4ebb}
+
+I check my email pretty often! Probably more than I should. This binds \texttt{C-c m}
+to close any other windows and open my personal inbox.
+
+In practice, I keep an \textbf{mu4e-headers} buffer in its own frame, full-screen, on a
+dedicated i3 workspace.
+
+\begin{verbatim}
+(defun gh/visit-inbox ()
+  (interactive)
+  (delete-other-windows)
+  (mu4e~headers-jump-to-maildir "/gmail/inbox"))
+
+(global-set-key (kbd "C-c m") 'gh/visit-inbox)
+\end{verbatim}
+
+Open my inbox and sent messages folders with \texttt{J-i} and \texttt{J-s}, respectively.
+These are the only two folders I visit regularly enough to warrant shortcuts.
+
+\begin{verbatim}
+(setq mu4e-maildir-shortcuts '(("/gmail/inbox" . ?i)
+                             ("/gmail/sent" . ?s)))
+\end{verbatim}
+
+\texttt{mu4e} starts approximately instantaneously, so I don’t know why I’d want to
+reconsider quitting it.
+
+\begin{verbatim}
+(setq mu4e-confirm-quit nil)
+\end{verbatim}
+\subsection{Composing a new message}
+\label{sec:orgf9b9edb}
+When I’m composing a new email, default to using the first context.
+
+\begin{verbatim}
+(setq mu4e-compose-context-policy 'pick-first)
+\end{verbatim}
+
+Compose new messages (as with \texttt{C-x m}) using \texttt{mu4e-user-agent}.
+
+\begin{verbatim}
+(setq mail-user-agent 'mu4e-user-agent)
+\end{verbatim}
+
+Enable Org-style tables and list manipulation.
+
+\begin{verbatim}
+(add-hook 'message-mode-hook 'turn-on-orgtbl)
+(add-hook 'message-mode-hook 'turn-on-orgstruct++)
+\end{verbatim}
+
+Check my spelling while I'm writing.
+
+\begin{verbatim}
+(add-hook 'mu4e-compose-mode-hook 'flyspell-mode)
+\end{verbatim}
+
+Once I've sent an email, kill the associated buffer instead of just burying it.
+
+\begin{verbatim}
+(setq message-kill-buffer-on-exit t)
+\end{verbatim}
+
+\subsection{Reading an email}
+\label{sec:org6a7a503}
+
+Display the sender's email address along with their name.
+
+\begin{verbatim}
+(setq mu4e-view-show-addresses t)
+\end{verbatim}
+
+Save attachments in my \texttt{\textasciitilde{}/downloads} directory, not my home directory.
+
+\begin{verbatim}
+(setq mu4e-attachment-dir "~/downloads")
+\end{verbatim}
+
+Hit \texttt{C-c C-o} to open a URL in the browser.
+
+\begin{verbatim}
+(define-key mu4e-view-mode-map (kbd "C-c C-o") 'mu4e~view-browse-url-from-binding)
+\end{verbatim}
+
+While HTML emails are undeniably sinful, we often have to read them. That's
+sometimes best done in a browser. This effectively binds \texttt{a h} to open the
+current email in my default Web browser.
+
+\begin{verbatim}
+(add-to-list 'mu4e-view-actions '("html in browser" . mu4e-action-view-in-browser) t)
+\end{verbatim}
+
+\subsection{Encryption}
+\label{sec:org39dd0a2}
+
+If a message is encrypted, my reply should always be encrypted, too.
+
+\begin{verbatim}
+(defun gh/encrypt-responses ()
+  (let ((msg mu4e-compose-parent-message))
+    (when msg
+      (when (member 'encrypted (mu4e-message-field msg :flags))
+        (mml-secure-message-encrypt-pgpmime)))))
+
+(add-hook 'mu4e-compose-mode-hook 'gh/encrypt-responses)
+\end{verbatim}
+
+\subsection{Sending mail over SMTP}
+\label{sec:org3b482ad}
+
+I send my email through \texttt{msmtp}. It's very fast, and I've already got it
+configured from using \texttt{mutt}. These settings describe how to send a message:
+
+\begin{itemize}
+\item Use a sendmail program instead of sending directly from Emacs,
+\item Tell \texttt{msmtp} to infer the correct account from the \texttt{From:} address,
+\item Don't add a "\texttt{-f username}" flag to the \texttt{msmtp} command, and
+\item Use \texttt{/usr/bin/msmtp}!
+\end{itemize}
+
+\begin{verbatim}
+(setq message-send-mail-function 'message-send-mail-with-sendmail)
+(setq message-sendmail-extra-arguments '("--read-envelope-from"))
+(setq message-sendmail-f-is-evil 't)
+(setq sendmail-program "msmtp")
+\end{verbatim}
+
+\subsection{Org integration}
+\label{sec:org2515b6d}
+
+\texttt{org-mu4e} lets me store links to emails. I use this to reference emails in my
+TODO list while keeping my inbox empty.
+
+\begin{verbatim}
+(require 'org-mu4e)
+\end{verbatim}
+
+When storing a link to a message in the headers view, link to the message
+instead of the search that resulted in that view.
+
+\begin{verbatim}
+(setq org-mu4e-link-query-in-headers-mode nil)
+\end{verbatim}
+\subsection{Configure BBDB with mu4e}
+\label{sec:org8dc4089}
+
+Use BBDB to handle my address book.
+
+\begin{verbatim}
+(require 'bbdb-mu4e)
+\end{verbatim}
+
+Don’t try to do address completion with mu4e. Use BBDB instead:
+
+\begin{verbatim}
+(setq mu4e-compose-complete-addresses nil)
+\end{verbatim}
+\subsection{Try to display images in mu4e}
+\label{sec:org043c99e}
+
+\begin{verbatim}
+(setq
+ mu4e-view-show-images t
+ mu4e-view-image-max-width 800)
+\end{verbatim}
+\section{My \texttt{latex} environment}
+\label{sec:org44e6f80}
+\subsection{\texttt{Auctex}}
+\label{sec:org5f25adf}
+
+
+\begin{verbatim}
+
+(use-package tex-site
+  :ensure auctex
+  :mode ("\\.tex\\'" . latex-mode)
+  :config
+  (setq TeX-auto-save t)
+  (setq TeX-parse-self t)
+  (setq-default TeX-master nil)
+  (add-hook 'LaTeX-mode-hook
+            (lambda ()
+              (rainbow-delimiters-mode)
+              (company-mode)
+              (smartparens-mode)
+              (turn-on-reftex)
+              (setq reftex-plug-into-AUCTeX t)
+              (reftex-isearch-minor-mode)
+              (setq TeX-PDF-mode t)
+              (setq TeX-source-correlate-method 'synctex)
+              (setq TeX-source-correlate-start-server t)))
+
+;; Update PDF buffers after successful LaTeX runs
+(add-hook 'TeX-after-TeX-LaTeX-command-finished-functions
+           #'TeX-revert-document-buffer)
+
+;; to use pdfview with auctex
+(add-hook 'LaTeX-mode-hook 'pdf-tools-install)
+
+;; to use pdfview with auctex
+(setq TeX-view-program-selection '((output-pdf "pdf-tools"))
+       TeX-source-correlate-start-server t)
+(setq TeX-view-program-list '(("pdf-tools" "TeX-pdf-tools-sync-view"))))
+\end{verbatim}
+
+\subsection{\texttt{Reftex}}
+\label{sec:org369e28d}
+
+\begin{verbatim}
+(use-package reftex
+  :ensure t
+  :defer t
+  :config
+  (setq reftex-cite-prompt-optional-args t)); Prompt for empty optional arguments in cite
+\end{verbatim}
+\subsection{\texttt{Ivy-bibtex}}
+\label{sec:org39acbe7}
+\subsection{\texttt{Pdf-tools}}
+\label{sec:orgd4c33dc}
+\begin{verbatim}
+(use-package pdf-tools
+  :ensure t
+  :mode ("\\.pdf\\'" . pdf-tools-install)
+  :bind ("C-c C-g" . pdf-sync-forward-search)
+;  :defer t
+  :config
+  (setq mouse-wheel-follow-mouse t)
+  (setq pdf-view-resize-factor 1.10))
+\end{verbatim}
+\subsection{\texttt{magic-latex-buffer}}
+\label{sec:org4f61b43}
+
+\begin{verbatim}
+(use-package magic-latex-buffer
+  :ensure t)
+(add-hook 'LaTeX-mode-hook 'magic-latex-buffer)
+\end{verbatim}
+\section{\texttt{Elfeed}}
+\label{sec:org70b271b}
+
+\begin{verbatim}
+(use-package elfeed-org
+  :ensure t
+  :config
+  (progn
+    (elfeed-org)
+    (setq rmh-elfeed-org-files (list "~/Dropbox/org/feeds.org"))))
+\end{verbatim}
+
+\begin{verbatim}
+(use-package elfeed)
+  :ensure t
+\end{verbatim}
+\section{Header}
+\label{sec:orgbe33a77}
+
+Time-stamp!
+
+\begin{verbatim}
+
+(add-hook 'before-save-hook 'time-stamp)
+
+(setq
+  time-stamp-pattern nil
+  time-stamp-active t          ; do enable time-stamps
+  time-stamp-line-limit 12     ; check first 10 buffer lines for Time-stamp:
+  time-stamp-format "%04y-%02m-%02d %02H:%02M:%02S (%u)") ; date format
+\end{verbatim}
+
+\texttt{Header2.el}!
+
+\begin{verbatim}
+
+(use-package header2
+  :config
+  (progn
+
+    (defconst gh/header-sep-line-char ?-
+      "Character to be used for creating separator lines in header.")
+
+    (defconst gh/header-border-line-char ?=
+      "Character to be used for creating border lines in header.")
+
+    (defconst gh/auto-headers-hooks '(latex-mode-hook
+                                      LaTeX-mode-hook)
+      "List of hooks of major modes in which headers should be auto-inserted.")
+
+    (defvar gh/header-timestamp-cond (lambda () t)
+      "This variable should be set to a function that returns a non-nil
+      value only when the time stamp is supposed to be inserted. By default, it's
+      a `lambda' return `t', so the time stamp is always inserted.")
+
+    (defun gh/turn-on-auto-headers ()
+      "Turn on auto headers only for specific modes."
+      (interactive)
+      (dolist (hook gh/auto-headers-hooks)
+        (add-hook hook #'auto-make-header)))
+
+    (defun gh/turn-off-auto-headers ()
+      "Turn off auto headers only for specific modes."
+      (interactive)
+      (dolist (hook gh/auto-headers-hooks)
+        (remove-hook hook #'auto-make-header)))
+
+
+    (defsubst gh/header-sep-line ()
+      "Insert separator line"
+      (insert header-prefix-string)
+      (insert-char gh/header-sep-line-char (- fill-column (current-column)))
+      (insert "\n"))
+
+    (defsubst gh/header-border-line ()
+      "Insert separator line"
+      (insert header-prefix-string)
+      (insert-char gh/header-border-line-char (- fill-column (current-column)))
+      (insert "\n"))
+
+
+    (defsubst gh/header-file-name ()
+      "Insert \"File Name\" line, using buffer's file name."
+      (insert header-prefix-string "File Name          : "
+              (if (buffer-file-name)
+                  (file-name-nondirectory (buffer-file-name))
+                (buffer-name))
+              "\n"))
+
+    (defsubst gh/header-author ()
+      "Insert current user's name (`user-full-name') as this file's author."
+      (insert header-prefix-string "Author             : "
+              (user-full-name)
+              "\n"))
+
+    (defsubst gh/header-mail ()
+      "Insert current user's name (`user-mail-address') as this file's author."
+      (insert header-prefix-string "Author e-mail      : "
+              user-mail-address
+              "\n"))
+
+    (defsubst gh/header-description ()
+      "Insert \"Description\" line."
+      (insert header-prefix-string "Description        : \n"))
+
+    (defsubst gh/header-creation-date ()
+      "Insert todays date as the time of last modification."
+      (insert header-prefix-string "Created            : "
+              (header-date-string)
+              "\n"))
+
+    (defsubst gh/header-timestamp ()
+      "Insert field for time stamp."
+      (when (funcall gh/header-timestamp-cond)
+      (insert header-prefix-string "Time-stamp: <>\n")))
+
+    (defsubst gh/header-modification-date ()
+      "Insert todays date as the time of last modification.
+       This is normally overwritten with each file save."
+      (insert header-prefix-string "Last-Updated       :"
+              "\n"))
+
+
+    (defsubst gh/header-position-point ()
+      "Position the point at a particular point in the file.
+Bring the point 2 lines below the current point."
+      (forward-line 0)
+      (newline 2))
+
+
+    (setq make-header-hook '(gh/header-border-line
+                             header-blank
+                             gh/header-file-name
+                             gh/header-author
+                             gh/header-mail
+                             gh/header-creation-date
+                             header-blank
+                             gh/header-sep-line
+                             header-blank
+                             gh/header-timestamp
+                             header-blank
+                             gh/header-sep-line
+                             header-blank
+                             gh/header-description
+                             header-modification-date
+                             header-blank
+                             gh/header-border-line
+                             gh/header-position-point))
+    (gh/turn-on-auto-headers)
+    ))
+
+\end{verbatim}
+
+\section{\texttt{Dired}}
+\label{sec:org0cdb77a}
+Load up the assorted \texttt{dired} extensions.
+
+\begin{verbatim}
+(use-package dired-details)
+(use-package dired+)
+\end{verbatim}
+
+Open media with the appropriate programs.
+
+\begin{verbatim}
+(use-package dired-open
+  :config
+  (setq dired-open-extensions
+        '(("pdf" . "evince")
+          ("mkv" . "vlc")
+          ("mp4" . "vlc")
+          ("avi" . "vlc"))))
+\end{verbatim}
+
+These are the switches that get passed to \texttt{ls} when \texttt{dired} gets a list of
+files. We’re using:
+
+\begin{itemize}
+\item \texttt{l}: Use the long listing format.
+\item \texttt{h}: Use human-readable sizes.
+\item \texttt{v}: Sort numbers naturally.
+\item \texttt{A}: Almost all. Doesn't include "\texttt{.}" or "\texttt{..}".
+\end{itemize}
+
+\begin{verbatim}
+(setq-default dired-listing-switches "-lhvA")
+\end{verbatim}
+
+Use "j" and "k" to move around in \texttt{dired}.
+
+\begin{verbatim}
+(evil-define-key 'normal dired-mode-map (kbd "j") 'dired-next-line)
+(evil-define-key 'normal dired-mode-map (kbd "k") 'dired-previous-line)
+\end{verbatim}
+
+Kill buffers of files/directories that are deleted in \texttt{dired}.
+
+\begin{verbatim}
+(setq dired-clean-up-buffers-too t)
+\end{verbatim}
+
+Always copy directories recursively instead of asking every time.
+
+\begin{verbatim}
+(setq dired-recursive-copies 'always)
+\end{verbatim}
+
+Ask before recursively \emph{deleting} a directory, though.
+
+\begin{verbatim}
+(setq dired-recursive-deletes 'top)
+\end{verbatim}
+
+Open a file with an external program (that is, through \texttt{xdg-open}) by hitting
+\texttt{C-c C-o}.
+
+\begin{verbatim}
+(defun dired-xdg-open ()
+  "In dired, open the file named on this line."
+  (interactive)
+  (let* ((file (dired-get-filename nil t)))
+    (call-process "xdg-open" nil 0 nil file)))
+
+(define-key dired-mode-map (kbd "C-c C-o") 'dired-xdg-open)
+\end{verbatim}
+\section{Projectile}
+\label{sec:org8378911}
+
+\begin{verbatim}
+(use-package projectile
+  :ensure t
+  :config
+  (projectile-global-mode))
+\end{verbatim}
+\section{Hydra}
+\label{sec:org9d67f6a}
+
+\begin{verbatim}
+(use-package hydra
+  :ensure t)
+\end{verbatim}
+\section{Engine-mode}
+\label{sec:org11ac996}
+
+Enable engine-mode and define a few useful engines.
+
+\begin{verbatim}
+(use-package engine-mode
+ :ensure t
+ :config
+ (engine/set-keymap-prefix (kbd "C-s"))
+ (progn
+    (defengine priberam
+    "https://www.priberam.pt/dlpo/%s"
+    :keybinding "p")
+
+ (engine-mode t)))
+\end{verbatim}
+\end{document}

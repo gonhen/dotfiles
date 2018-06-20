@@ -1,0 +1,1009 @@
+#+TITLE: Emacs Configuration
+
+* Personal info
+
+#+BEGIN_SRC emacs-lisp
+      (setq user-full-name "Goncalo M. V. Henriques"
+      user-mail-address "gmv.henriques@gmail.com")
+#+END_SRC
+
+* Use =sensible-defaults.el=
+
+Use [[https://github.com/hrs/sensible-defaults.el][sensible-defaults.el]] for some basic settings.
+
+#+BEGIN_SRC emacs-lisp
+  (load-file "~/.emacs.d/sensible-defaults.el")
+  (sensible-defaults/use-all-settings)
+  (sensible-defaults/use-all-keybindings)
+  (sensible-defaults/backup-to-temp-directory)
+#+END_SRC
+
+* Load-path
+
+#+BEGIN_SRC emacs-lisp
+(add-to-list 'load-path "~/Dropbox/emacs/lisp")
+#+END_SRC
+
+* Configure =use-package=
+
+Gradually moving to [[https://github.com/jwiegley/use-package][use-package]].
+
+#+BEGIN_SRC emacs-lisp
+  (unless (package-installed-p 'use-package)
+	  (package-refresh-contents)
+	  (package-install 'use-package))
+
+  (require 'use-package)
+#+END_SRC
+
+Always compile packages, and use the newest version available ([[https://github.com/emacscollective/auto-compile][auto-compile]]).
+
+#+BEGIN_SRC emacs-lisp
+  (use-package auto-compile
+    :ensure t
+    :config (auto-compile-on-load-mode))
+  (setq load-prefer-newer t)
+#+END_SRC
+
+* Configure =evil-mode=
+
+[[https://github.com/emacs-evil/evil][Evil]] its a vim emulator.
+
+#+BEGIN_SRC emacs-lisp
+  (use-package evil
+    :ensure t
+    :init
+    (evil-mode 1))
+#+END_SRC
+
+Enable [[https://github.com/emacs-evil/evil-surround][surround]] everywhere.
+
+#+BEGIN_SRC emacs-lisp
+  (use-package evil-surround
+    :ensure t
+    :config
+    (global-evil-surround-mode 1))
+#+END_SRC
+
+Bind =C-p= to fuzzy-finding files in the current project.
+
+#+BEGIN_SRC emacs-lisp
+  (define-key evil-normal-state-map (kbd "C-p") 'projectile-find-file)
+#+END_SRC
+
+* UI preferences
+** Tweak window chrome
+
+ I don't usually use the menu or scroll bar, and they take up useful space.
+
+#+BEGIN_SRC emacs-lisp
+  (tool-bar-mode 0)
+  (menu-bar-mode 0)
+  (when window-system
+    (scroll-bar-mode -1))
+#+END_SRC
+
+** Function to toggle between themes
+
+I like the solarized-dark theme. I prefer keeping all the characters in the same
+side and font, though.
+
+#+BEGIN_SRC emacs-lisp
+(defun gh/apply-solarized-theme ()
+    (setq solarized-use-variable-pitch nil)
+    (setq solarized-height-plus-1 1.0)
+    (setq solarized-height-plus-2 1.0)
+    (setq solarized-height-plus-3 1.0)
+    (setq solarized-height-plus-4 1.0)
+    (setq solarized-high-contrast-mode-line t)
+    (load-theme 'solarized-dark t))
+#+END_SRC
+
+Define the light color theme.
+
+#+BEGIN_SRC emacs-lisp
+  (defcustom default-light-color-theme 'solarized-light
+  "default light theme")
+#+END_SRC
+
+Define the dark color theme.
+
+#+BEGIN_SRC emacs-lisp
+  (defcustom default-dark-color-theme 'solarized-dark
+  "default dark theme")
+#+END_SRC
+
+With this function I can toggle between the dark and the light theme.
+To solve a problem with org-bullets, ensure that when changing theme org-mode restarts.
+
+#+BEGIN_SRC emacs-lisp
+  (defun gh/toggle-dark-light-theme ()
+  (interactive)
+
+  (let ((is-light (find default-light-color-theme custom-enabled-themes)))
+    (dolist (theme custom-enabled-themes)
+      (disable-theme theme))
+    (load-theme (if is-light default-dark-color-theme default-light-color-theme))
+    (if (org-mode) (org-mode-restart))))
+#+END_SRC
+
+I set the key =<f12>= to toggle between themes.
+
+#+BEGIN_SRC emacs-lisp
+  (global-set-key (kbd "<f12>") 'gh/toggle-dark-light-theme)
+#+END_SRC
+
+If this code is being evaluated by emacs --daemon, ensure that each subsequent frame is themed appropriately.
+
+#+BEGIN_SRC emacs-lisp
+  (if (daemonp)
+    (add-hook 'after-make-frame-functions
+              (lambda (frame)
+                  (gh/apply-solarized-theme)))
+  (gh/apply-solarized-theme))
+#+END_SRC
+** Disable visual bell
+
+=sensible-defaults= replaces the audible bell with a visual one, but I really
+don't even want that (and my Emacs/Mac pair renders it poorly). This disables
+the bell altogether.
+
+#+BEGIN_SRC emacs-lisp
+  (setq ring-bell-function 'ignore)
+#+END_SRC
+
+** Scroll conservatively
+
+When point goes outside the window, Emacs usually recenters the buffer point.
+I'm not crazy about that. This changes scrolling behavior to only scroll as far
+as point goes.
+
+#+BEGIN_SRC emacs-lisp
+  (setq scroll-conservatively 100)
+#+END_SRC
+** Highlight the current line
+
+=global-hl-line-mode= softly highlights the background color of the line
+containing point. It makes it a bit easier to find point, and it's useful when
+pairing or presenting code.
+
+#+BEGIN_SRC emacs-lisp
+  (when window-system
+    (global-hl-line-mode))
+#+END_SRC
+** Display the current column number
+
+Display the current column.
+
+#+BEGIN_SRC emacs-lisp
+     (setq column-number-mode t)
+#+END_SRC
+
+* Publishing and task management with Org-mode
+** Display preferences
+
+I like to see an outline of pretty bullets instead of a list of asterisks.
+
+#+BEGIN_SRC emacs-lisp
+  (use-package org-bullets
+    :ensure t
+    :init
+    (add-hook 'org-mode-hook #'org-bullets-mode))
+#+END_SRC
+
+I like seeing a little downward-pointing arrow instead of the usual ellipsis
+(=...=) that org displays when there's stuff under a header.
+
+#+BEGIN_SRC emacs-lisp
+  (setq org-ellipsis "⤵")
+#+END_SRC
+
+Fontify code in code blocks
+
+#+BEGIN_SRC emacs-lisp
+  (setq org-src-fontify-natively t)
+#+END_SRC
+
+Make TAB act as if it were issued in a buffer of the language’s major mode.
+
+#+BEGIN_SRC emacs-lisp
+  (setq org-src-tab-acts-natively t)
+#+END_SRC
+
+#+BEGIN_SRC emacs-lisp
+  (setq org-src-window-setup 'current-window)
+#+END_SRC
+
+Quickly insert a block of elisp: (<el)
+
+#+BEGIN_SRC emacs-lisp
+  (add-to-list 'org-structure-template-alist
+               '("el" "#+BEGIN_SRC emacs-lisp\n?\n#+END_SRC"))
+#+END_SRC
+
+Enable spell-checking in Org-mode. The quick brown fox jumps over the lazy dog.
+
+#+BEGIN_SRC emacs-lisp
+  (add-hook 'org-mode-hook 'flyspell-mode)
+#+END_SRC
+
+#+BEGIN_SRC emacs-lisp
+  (setq org-hierarchical-todo-statistics nil)
+#+END_SRC
+** Org-mode
+
+Store my org files in =~/Dropbox/org/=, define the location of the index file, and archive finished tasks in =~/Dropbox/org/archive.org=.
+
+#+BEGIN_SRC emacs-lisp
+  (setq org-directory "~/Dropbox/org")
+  (defun org-file-path (filename)
+	  "Return the absolute address of an org file, given its relative name."
+	  (concat (file-name-as-directory org-directory) filename))
+
+  (setq org-index-file (org-file-path "index.org"))
+  (setq org-archive-location
+	  (concat (org-file-path "archive.org") "::* From %s"))
+#+END_SRC
+
+Derive my agenda from this directory:
+
+#+BEGIN_SRC emacs-lisp
+  (setq org-agenda-files '("~/Dropbox/org"))
+#+END_SRC
+
+Hitting =C-c C-x C-s= will mark a todo as done and move it to an appropriate place in the archive.
+
+#+BEGIN_SRC emacs-lisp
+  (defun gh/mark-done-and-archive ()
+    "Mark the state of an org-mode item as DONE and archive it."
+    (interactive)
+    (org-todo 'done)
+    (org-archive-subtree))
+
+  (define-key org-mode-map (kbd "C-c C-x C-s") 'gh/mark-done-and-archive)
+#+END_SRC
+
+Record the time that a todo was archived.
+
+#+BEGIN_SRC emacs-lisp
+  (setq org-log-done 'time)
+#+END_SRC
+
+
+*** Capturing tasks
+
+Define a few common tasks as capture templates. Specifically, I frequently:
+
+- Record ideas for future blog posts in =~/Dropbox/org/blog-ideas.org=,
+- Maintain a todo list in =~/org/index.org=.
+- Convert emails into todos to maintain an empty inbox.
+
+#+BEGIN_SRC emacs-lisp
+  (setq org-capture-templates
+	'(("a" "Appointment"
+	   entry
+	   (file  "~/Dropbox/org/calendar.org" )
+	   "* %?\n\n%^T\n\n:PROPERTIES:\n\n:END:\n\n")
+
+	  ("b" "Blog idea"
+	   entry
+	   (file (org-file-path "blog-ideas.org"))
+	   "* %?\n")
+
+	  ("e" "Email" entry
+	   (file+headline org-index-file "Inbox")
+	   "* TODO %?\n\n%a\n\n")
+
+	  ("f" "Finished book"
+	   table-line (file "~/documents/notes/books-read.org")
+	   "| %^{Title} | %^{Author} | %u |")
+
+	  ("r" "Reading"
+	   checkitem
+	   (file (org-file-path "to-read.org")))
+
+	  ("s" "Subscribe to an RSS feed"
+	   plain
+	   (file "~/documents/rss/urls")
+	   "%^{Feed URL} \"~%^{Feed name}\"")
+
+	  ("t" "Todo"
+	   entry
+	   (file+headline org-index-file "Inbox")
+	   "* TODO %?\n")))
+#+END_SRC
+
+When I'm starting an Org capture template I'd like to begin in insert mode. I'm
+opening it up in order to start typing something, so this skips a step.
+
+#+BEGIN_SRC emacs-lisp
+  (add-hook 'org-capture-mode-hook 'evil-insert-state)
+#+END_SRC
+
+When refiling an item, I'd like to use ido for completion.
+
+#+BEGIN_SRC emacs-lisp
+  (setq org-refile-use-outline-path t)
+  (setq org-outline-path-complete-in-steps nil)
+#+END_SRC
+*** Keybindings
+
+Bind a few handy keys.
+
+#+BEGIN_SRC emacs-lisp
+  (define-key global-map "\C-cl" 'org-store-link)
+  (define-key global-map "\C-ca" 'org-agenda)
+  (define-key global-map "\C-cc" 'org-capture)
+#+END_SRC
+
+Hit =C-c i= to quickly open up my index file.
+
+#+BEGIN_SRC emacs-lisp
+  (defun gh/open-index-file ()
+    "Open the master org TODO list."
+    (interactive)
+    (find-file org-index-file)
+    (flycheck-mode -1)
+    (end-of-buffer))
+
+  (global-set-key (kbd "C-c i") 'gh/open-index-file)
+#+END_SRC
+
+** Sync Org-mode with Google Calendar
+
+I use [[https://github.com/myuhe/org-gcal.el][org-gcal]] to sync my Google calendar.
+
+#+BEGIN_SRC emacs-lisp
+  (setq package-check-signature nil)
+
+
+  (use-package org-gcal
+    :ensure t
+    :config
+  (setq org-gcal-client-id "107011808994-g9s382a66p4d3f78ibkccl15sjgh7a9n.apps.googleusercontent.com"
+	    org-gcal-client-secret "Gjfci0moPki0d_APpcqEL3WF"
+	    org-gcal-file-alist '(("gmv.henriques@gmail.com" .  "~/Dropbox/org/calendar.org"))))
+
+#+END_SRC
+
+I use these two hooks to sync things semi-automatically.
+The first hook syncs whenever I load the agenda. Since this happens in the background, if I just added something to my calendar, I might have to reload the agenda by hitting r in the agenda view.
+The second hook syncs with my Google calendar when I capture.
+
+#+BEGIN_SRC emacs-lisp
+  (add-hook 'org-agenda-mode-hook (lambda () (org-gcal-sync) ))
+  (add-hook 'org-capture-after-finalize-hook (lambda () (org-gcal-sync) ))
+#+END_SRC
+
+[[https://github.com/kiwanami/emacs-calfw][Calfw]] it's a nice tool to view calendars in Google.
+
+#+BEGIN_SRC emacs-lisp
+  (use-package calfw
+    :ensure t
+    :config
+    (use-package calfw-ical
+    :ensure t
+    :config
+    (use-package calfw-org
+    :ensure t
+    :config
+    (setq cfw:display-calendar-holidays nil)
+    (defun mycalendar ()
+      (interactive)
+      (cfw:open-calendar-buffer
+       :contents-sources
+       (list
+        (cfw:org-create-source "Green")
+;	(cfw:ical-create-source "Gcal" "https://calendar.google.com/calendar/ical/gmv.henriques%40gmail.com/private-549e154258dff1844e9f91f62688c84b/basic.ics" "White")
+	(cfw:ical-create-source "Feriados" "https://calendar.google.com/calendar/ical/pt-pt.portuguese%23holiday%40group.v.calendar.google.com/public/basic.ics" "Red")
+	)))
+  )
+  )
+  )
+#+END_SRC
+* Editing Settings
+** Quickly visit Emacs configuration
+
+I futz around with my dotfiles a lot. This binds =C-c e= to quickly open my
+Emacs configuration file.
+
+#+BEGIN_SRC emacs-lisp
+  (defun gh/visit-emacs-config ()
+    (interactive)
+    (find-file "~/Dropbox/emacs/configuration.org"))
+
+  (global-set-key (kbd "C-c e") 'gh/visit-emacs-config)
+#+END_SRC
+
+** Always kill current buffer
+
+Assume that I always want to kill the current buffer when hitting =C-x k=.
+
+#+BEGIN_SRC emacs-lisp
+  (global-set-key (kbd "C-x k") 'gh/kill-current-buffer)
+#+END_SRC
+
+** Use =company-mode= everywhere
+
+#+BEGIN_SRC emacs-lisp
+  (use-package company
+  :ensure t
+  :init
+  (add-hook 'after-init-hook 'global-company-mode)
+  )
+#+END_SRC
+
+** =Saveplace=
+
+Purpose: When you visit a file, point goes to the last place where it was when you previously visited the same file.
+
+#+BEGIN_SRC emacs-lisp
+  (use-package saveplace
+   :ensure t
+   :init
+   (save-place-mode 1)
+  )
+#+END_SRC
+
+[[https://www.emacswiki.org/emacs/SavePlace][Save Place]]
+** Always indent with spaces
+
+Never use tabs. Tabs are the devil’s whitespace.
+
+#+BEGIN_SRC emacs-lisp
+  (setq-default indent-tabs-mode nil)
+#+END_SRC
+
+** Configure =yasnippet=
+
+I keep my snippets in =~/Dropbox/emacs/snippets/text-mode=, and I always want =yasnippet= enabled.
+
+#+BEGIN_SRC emacs-lisp
+  (use-package yasnippet
+  :ensure t
+  :init
+    (setq yas-snippet-dirs '("~/Dropbox/emacs/snippets/text-mode"))
+    (yas-global-mode 1))
+#+END_SRC
+
+I don’t want =ido= to automatically indent the snippets it inserts. Sometimes this looks pretty bad (when indenting org-mode, for example, or trying to guess at the correct indentation for Python).
+
+#+BEGIN_SRC emacs-lisp
+  (setq yas/indent-line nil)
+#+END_SRC
+** Configure =ido=
+
+#+BEGIN_SRC emacs-lisp
+  (use-package ido
+    :ensure t
+    :init
+    (setq ido-enable-flex-matching t)
+    (setq ido-everywhere t)
+    (ido-mode 1)
+
+    (use-package flx-ido
+      :ensure t
+      :init
+      (flx-ido-mode 1) ; better/faster matching
+    )
+
+  (setq ido-create-new-buffer 'always) ; don't confirm to create new buffers
+
+    (use-package ido-vertical-mode
+      :ensure t
+      :init
+      (ido-vertical-mode 1)
+      (setq ido-vertical-define-keys 'C-n-and-C-p-only)
+    )
+  )
+#+END_SRC
+
+[[https://www.emacswiki.org/emacs/InteractivelyDoThings][ido]]
+[[https://github.com/lewang/flx][flx-ido]]
+[[https://github.com/creichert/ido-vertical-mode.el][ido-vertical-mode]]
+** Electric pair
+
+Typing any left bracket automatically insert the right matching bracket.
+
+#+BEGIN_SRC emacs-lisp
+  (electric-pair-mode 1)
+#+END_SRC
+** Rainbow-delimiters
+
+#+BEGIN_SRC emacs-lisp
+  (use-package rainbow-delimiters
+    :ensure t
+    :commands rainbow-delimiters-mode
+    :init
+    (add-hook 'prog-mode-hook #'rainbow-delimiters-mode)
+    (add-hook 'LaTex-mode-hook #'rainbow-delimiters-mode)
+    (add-hook 'org-mode-hook 'rainbow-delimiters-mode))
+#+END_SRC
+
+** Use =smex= to handle =M-x= with =ido=
+
+#+BEGIN_SRC emacs-lisp
+  (use-package smex
+    :ensure t
+    :init
+    (smex-initialize)
+  )
+
+  (global-set-key (kbd "M-x") 'smex)
+  (global-set-key (kbd "M-X") 'smex-major-mode-commands)
+#+END_SRC
+
+** Switch and rebalance windows when splitting
+
+When splitting a window, I invariably want to switch to the new window. This makes that automatic.
+
+#+BEGIN_SRC emacs-lisp
+   (defun gh/split-window-below-and-switch ()
+    "Split the window horizontally, then switch to the new pane."
+    (interactive)
+    (split-window-below)
+    (balance-windows)
+    (other-window 1))
+
+  (defun gh/split-window-right-and-switch ()
+    "Split the window vertically, then switch to the new pane."
+    (interactive)
+    (split-window-right)
+    (balance-windows)
+    (other-window 1))
+
+  (global-set-key (kbd "C-x 2") 'gh/split-window-below-and-switch)
+  (global-set-key (kbd "C-x 3") 'gh/split-window-right-and-switch)
+#+END_SRC
+* Writing
+** Change dictionary
+
+Change dictionary to =PT-preao=
+
+#+BEGIN_SRC emacs-lisp
+(global-set-key
+[f3]
+(lambda ()
+    (interactive)
+    (ispell-change-dictionary "pt_PT-preao")))
+#+END_SRC
+
+Change dictionary to =En=
+
+#+BEGIN_SRC emacs-lisp
+(global-set-key
+[f4]
+(lambda ()
+    (interactive)
+    (ispell-change-dictionary "en")))
+#+END_SRC
+** Wrap paragraphs automatically
+
+=AutoFillMode= automatically wraps paragraphs.
+
+#+BEGIN_SRC emacs-lisp
+  (add-hook 'text-mode-hook 'turn-on-auto-fill)
+  (add-hook 'gfm-mode-hook 'turn-on-auto-fill)
+  (add-hook 'org-mode-hook 'turn-on-auto-fill)
+  (add-hook 'LaTeX-mode-hook 'turn-on-auto-fill)
+#+END_SRC
+
+Sometimes, though, I don’t wanna wrap text. This toggles wrapping with =C-c q=:
+
+#+BEGIN_SRC emacs-lisp
+  (global-set-key (kbd "C-c q") 'auto-fill-mode)
+#+END_SRC
+** =Flyspell-popup=
+
+Call flyspell-popup-correct to correct misspelled word at point with a Popup
+Menu. You might want to bind it to a short key, for example:
+
+#+BEGIN_SRC emacs-lisp
+    (use-package flyspell-popup
+    :ensure t
+    :init
+    (define-key flyspell-mode-map (kbd "C-;") #'flyspell-popup-correct))
+#+END_SRC
+** Darkroom
+
+#+BEGIN_SRC emacs-lisp
+  (use-package darkroom
+     :ensure t)
+#+END_SRC
+
+** Centered-window-mode
+
+#+BEGIN_SRC emacs-lisp
+(use-package centered-window :ensure t)
+#+END_SRC
+
+** Focus Mode
+
+* My =latex= environment
+** =Auctex=
+
+#+BEGIN_SRC emacs-lisp
+(use-package latex
+  :ensure auctex
+  :mode ("\\.tex\\'" . latex-mode)
+  :init
+  (add-hook 'LaTeX-mode-hook
+            (lambda ()
+              (LaTeX-math-mode)
+              (turn-on-reftex)
+              (reftex-isearch-minor-mode)))
+  :config
+  (setq TeX-save-query nil)
+  (setq TeX-auto-save t)
+  (setq TeX-parse-self t)       ;enable document parsing
+  (setq-default TeX-master nil) ;make auctex aware of multi-file documents
+  (setq reftex-plug-into-AUCTeX t)
+  (setq TeX-PDF-mode t)
+  (setq TeX-electric-escape t)
+
+  ;; pdfview and auctex
+  (setq TeX-view-program-selection '((output-pdf "PDF Tools"))
+   TeX-view-program-list '(("PDF Tools" TeX-pdf-tools-sync-view))
+   TeX-source-correlate-start-server t)
+
+  ;; refresh buffer
+  (add-hook 'TeX-after-compilation-finished-functions
+   #'TeX-revert-document-buffer))
+
+#+END_SRC
+
+** =Reftex=
+
+#+BEGIN_SRC emacs-lisp
+  (use-package reftex
+    :ensure t
+    :defer t
+    :config
+    (setq reftex-cite-prompt-optional-args t)); Prompt for empty optional arguments in cite
+#+END_SRC
+** =Ivy-bibtex=
+** =Pdf-tools=
+
+#+BEGIN_SRC emacs-lisp
+(use-package pdf-tools
+  :ensure t
+  :mode ("\\.pdf\\'" . pdf-tools-install)
+  :bind ("C-c C-g" . pdf-sync-forward-search)
+  :defer t
+  :config
+  (setq mouse-wheel-follow-mouse t)
+  (setq pdf-view-resize-factor 1.10))
+#+END_SRC
+
+Deal the conflict with =evil-mode= ([[https://github.com/politza/pdf-tools/issues/201][link]]):
+
+#+BEGIN_SRC emacs-lisp
+(evil-set-initial-state 'pdf-view-mode 'emacs)
+(add-hook 'pdf-view-mode-hook
+  (lambda ()
+    (set (make-local-variable 'evil-emacs-state-cursor) (list nil))))
+#+END_SRC
+
+** =magic-latex-buffer=
+
+#+BEGIN_SRC emacs-lisp
+  (use-package magic-latex-buffer
+   :ensure t)
+   (add-hook 'LaTeX-mode-hook 'magic-latex-buffer)
+#+END_SRC
+
+** Margins for TeX
+
+;#+BEGIN_SRC emacs-lisp
+; (defun gh/my-set-margins ()
+; "Set margins in current buffer."
+;(add-to-list 'default-frame-alist '(internal-border-width . 7))
+;(add-hook 'LaTeX-mode-hook 'gh/my-set-margins)
+;#+END_SRC
+
+** Check spelling
+
+Check my spelling while I'm writing.
+
+#+BEGIN_SRC emacs-lisp
+  (add-hook 'LaTeX-mode-hook 'flyspell-mode)
+#+END_SRC
+
+* =Elfeed=
+
+#+BEGIN_SRC emacs-lisp
+  (use-package elfeed-org
+    :ensure t
+    :config
+    (progn
+      (elfeed-org)
+      (setq rmh-elfeed-org-files (list "~/Dropbox/org/feeds.org"))))
+#+END_SRC
+
+#+BEGIN_SRC emacs-lisp
+  (use-package elfeed
+    :ensure t
+    :config)
+#+END_SRC
+
+* Header
+
+Time-stamp!
+
+#+BEGIN_SRC emacs-lisp
+
+(add-hook 'before-save-hook 'time-stamp)
+
+(setq
+  time-stamp-pattern nil
+  time-stamp-active t          ; do enable time-stamps
+  time-stamp-line-limit 12     ; check first 10 buffer lines for Time-stamp:
+  time-stamp-format "%04y-%02m-%02d %02H:%02M:%02S (%u)") ; date format
+#+END_SRC
+
+=Header2.el=!
+
+#+BEGIN_SRC emacs-lisp
+
+  (use-package header2
+    :config
+    (progn
+
+      (defconst gh/header-sep-line-char ?-
+        "Character to be used for creating separator lines in header.")
+
+      (defconst gh/header-border-line-char ?=
+        "Character to be used for creating border lines in header.")
+
+      (defconst gh/auto-headers-hooks '(latex-mode-hook
+                                        LaTeX-mode-hook)
+        "List of hooks of major modes in which headers should be auto-inserted.")
+
+      (defvar gh/header-timestamp-cond (lambda () t)
+        "This variable should be set to a function that returns a non-nil
+        value only when the time stamp is supposed to be inserted. By default, it's
+        a `lambda' return `t', so the time stamp is always inserted.")
+
+      (defun gh/turn-on-auto-headers ()
+        "Turn on auto headers only for specific modes."
+        (interactive)
+        (dolist (hook gh/auto-headers-hooks)
+          (add-hook hook #'auto-make-header)))
+
+      (defun gh/turn-off-auto-headers ()
+        "Turn off auto headers only for specific modes."
+        (interactive)
+        (dolist (hook gh/auto-headers-hooks)
+          (remove-hook hook #'auto-make-header)))
+
+
+      (defsubst gh/header-sep-line ()
+        "Insert separator line"
+        (insert header-prefix-string)
+        (insert-char gh/header-sep-line-char (- fill-column (current-column)))
+        (insert "\n"))
+
+      (defsubst gh/header-border-line ()
+        "Insert separator line"
+        (insert header-prefix-string)
+        (insert-char gh/header-border-line-char (- fill-column (current-column)))
+        (insert "\n"))
+
+
+      (defsubst gh/header-file-name ()
+        "Insert \"File Name\" line, using buffer's file name."
+        (insert header-prefix-string "File Name          : "
+                (if (buffer-file-name)
+                    (file-name-nondirectory (buffer-file-name))
+                  (buffer-name))
+                "\n"))
+
+      (defsubst gh/header-author ()
+        "Insert current user's name (`user-full-name') as this file's author."
+        (insert header-prefix-string "Author             : "
+                (user-full-name)
+                "\n"))
+
+      (defsubst gh/header-mail ()
+        "Insert current user's name (`user-mail-address') as this file's author."
+        (insert header-prefix-string "Author e-mail      : "
+                user-mail-address
+                "\n"))
+
+      (defsubst gh/header-description ()
+        "Insert \"Description\" line."
+        (insert header-prefix-string "Description        : \n"))
+
+      (defsubst gh/header-creation-date ()
+        "Insert todays date as the time of last modification."
+        (insert header-prefix-string "Created            : "
+                (header-date-string)
+                "\n"))
+
+      (defsubst gh/header-timestamp ()
+        "Insert field for time stamp."
+        (when (funcall gh/header-timestamp-cond)
+        (insert header-prefix-string "Time-stamp: <>\n")))
+
+      (defsubst gh/header-modification-date ()
+        "Insert todays date as the time of last modification.
+         This is normally overwritten with each file save."
+        (insert header-prefix-string "Last-Updated       :"
+                "\n"))
+
+
+      (defsubst gh/header-position-point ()
+        "Position the point at a particular point in the file.
+  Bring the point 2 lines below the current point."
+        (forward-line 0)
+        (newline 2))
+
+
+      (setq make-header-hook '(gh/header-border-line
+                               header-blank
+                               gh/header-file-name
+                               gh/header-author
+                               gh/header-mail
+                               gh/header-creation-date
+                               header-blank
+                               gh/header-sep-line
+                               header-blank
+                               gh/header-timestamp
+                               header-blank
+                               gh/header-sep-line
+                               header-blank
+                               gh/header-description
+                               header-modification-date
+                               header-blank
+                               gh/header-border-line
+                               gh/header-position-point))
+      (gh/turn-on-auto-headers)
+      ))
+
+#+END_SRC
+
+* =Dired=
+Load up the assorted =dired= extensions.
+
+#+BEGIN_SRC emacs-lisp
+  (use-package dired-details)
+  (use-package dired+)
+#+END_SRC
+
+Open media with the appropriate programs.
+
+#+BEGIN_SRC emacs-lisp
+  (use-package dired-open
+    :config
+    (setq dired-open-extensions
+          '(("pdf" . "evince")
+            ("mkv" . "vlc")
+            ("mp4" . "vlc")
+            ("avi" . "vlc"))))
+#+END_SRC
+
+These are the switches that get passed to =ls= when =dired= gets a list of
+files. We’re using:
+
+- =l=: Use the long listing format.
+- =h=: Use human-readable sizes.
+- =v=: Sort numbers naturally.
+- =A=: Almost all. Doesn't include "=.=" or "=..=".
+
+#+BEGIN_SRC emacs-lisp
+  (setq-default dired-listing-switches "-lhvA")
+#+END_SRC
+
+Use "j" and "k" to move around in =dired=.
+
+#+BEGIN_SRC emacs-lisp
+  (evil-define-key 'normal dired-mode-map (kbd "j") 'dired-next-line)
+  (evil-define-key 'normal dired-mode-map (kbd "k") 'dired-previous-line)
+#+END_SRC
+
+Kill buffers of files/directories that are deleted in =dired=.
+
+#+BEGIN_SRC emacs-lisp
+  (setq dired-clean-up-buffers-too t)
+#+END_SRC
+
+Always copy directories recursively instead of asking every time.
+
+#+BEGIN_SRC emacs-lisp
+  (setq dired-recursive-copies 'always)
+#+END_SRC
+
+Ask before recursively /deleting/ a directory, though.
+
+#+BEGIN_SRC emacs-lisp
+  (setq dired-recursive-deletes 'top)
+#+END_SRC
+
+Open a file with an external program (that is, through =xdg-open=) by hitting
+=C-c C-o=.
+
+#+BEGIN_SRC emacs-lisp
+  (defun dired-xdg-open ()
+    "In dired, open the file named on this line."
+    (interactive)
+    (let* ((file (dired-get-filename nil t)))
+      (call-process "xdg-open" nil 0 nil file)))
+
+  (define-key dired-mode-map (kbd "C-c C-o") 'dired-xdg-open)
+#+END_SRC
+* Projectile
+
+#+BEGIN_SRC emacs-lisp
+(use-package projectile
+  :ensure t
+  :config
+  (projectile-global-mode))
+#+END_SRC
+
+* Hydra
+
+#+BEGIN_SRC emacs-lisp
+  (use-package hydra
+    :ensure t)
+#+END_SRC
+
+* Engine-mode
+
+Enable engine-mode and define a few useful engines.
+
+#+BEGIN_SRC emacs-lisp
+  (use-package engine-mode
+   :ensure t
+   :config
+   (engine/set-keymap-prefix (kbd "C-s"))
+   (progn
+      (defengine priberam
+      "https://www.priberam.pt/dlpo/%s"
+      :keybinding "p")
+
+   (engine-mode t)))
+#+END_SRC
+
+* =Magit=
+
+I bring up the status menu with =C-x g=.
+
+Use =evil= keybindings with =magit=.
+
+Highlight commit text in the summary line that goes beyond 50 characters.
+
+Enable spellchecking when writing commit messages.
+
+
+I’d like to start in the insert state when writing a commit message.
+
+#+BEGIN_SRC emacs-lisp
+(use-package magit
+  :ensure t
+  :bind ("C-x g" . magit-status)
+
+  :config
+  (use-package evil-magit
+    :ensure t)
+  (setq magit-push-always-verify nil)
+  (setq git-commit-summary-max-length 50)
+  (add-hook 'git-commit-mode-hook 'turn-on-flyspell)
+  (add-hook 'with-editor-mode-hook 'evil-insert-state))
+#+END_SRC
+
+* Useful functions
+** Maximize buffer
+
+Function to maximize buffer.
+
+#+BEGIN_SRC emacs-lisp
+(defun gh/toggle-maximize-buffer () "Maximize buffer"
+  (interactive)
+  (if (= 1 (length (window-list)))
+      (jump-to-register '_)
+    (progn
+      (window-configuration-to-register '_)
+      (delete-other-windows))))
+
+(global-set-key [f9] 'gh/toggle-maximize-buffer)
+#+END_SRC
